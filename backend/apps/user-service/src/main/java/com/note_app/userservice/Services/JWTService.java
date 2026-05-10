@@ -22,6 +22,8 @@ public class JWTService implements IJwtService {
     @Override
     public String generateToken(User user) {
         Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("userId", user.id());
+        extraClaims.put("email", user.email());
         extraClaims.put("role", user.role());
         
         return Jwts.builder()
