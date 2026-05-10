@@ -1,0 +1,47 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "FileServiceApplication",
+      "request": "launch",
+      "mainClass": "com.note_app.fileservice.FileServiceApplication",
+      "projectName": "note-app-fileservice"
+    },
+    {
+      "type": "java",
+      "name": "GatewayServiceApplication",
+      "request": "launch",
+      "mainClass": "com.note_app.gatewayservice.GatewayServiceApplication",
+      "projectName": "note-app-gatewayservice"
+    },
+    {
+      "type": "java",
+      "name": "NoteServiceApplication",
+      "request": "launch",
+      "mainClass": "com.note_app.noteservice.NoteServiceApplication",
+      "projectName": "note-app-noteservice"
+    },
+    {
+      "type": "java",
+      "name": "UserServiceApplication",
+      "request": "launch",
+      "mainClass": "com.note_app.userservice.UserServiceApplication",
+      "projectName": "note-app-userservice"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run All Services",
+      "configurations": [
+        "FileServiceApplication",
+        "GatewayServiceApplication",
+        "NoteServiceApplication",
+        "UserServiceApplication"
+      ]
+    }
+  ]
+}

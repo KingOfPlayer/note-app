@@ -1,0 +1,2 @@
+com.note_app.commonutils.exception.GlobalExceptionHandler
+com.note_app.commonutils.authguard.AuthGuardAutoConfiguration

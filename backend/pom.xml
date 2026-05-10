@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.note_app</groupId>
+    <artifactId>note-app-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>17</java.version>
+        <spring-boot.version>3.5.13</spring-boot.version> <!-- Define version here -->
+        <common-utils.version>0.0.1-SNAPSHOT</common-utils.version> <!-- Define version here -->
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- This imports all Spring Boot versions at once -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.note_app</groupId>
+                <artifactId>note-app-common-utils</artifactId>
+                <version>${common-utils.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+    <modules>
+        <module>utils/common-utils</module>
+        <module>apps/gateway-service</module>
+        <module>apps/user-service</module>
+        <module>apps/note-service</module>
+        <module>apps/file-service</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    
+</project>
