@@ -44,6 +44,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.note_app</groupId>
+			<artifactId>note-app-common-utils</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
