@@ -8,4 +8,5 @@ public interface IUserService {
     User registerUser(User user);
     User getUserById(String id);
     void deleteUser(String id);
+    String login(User user);
 }
