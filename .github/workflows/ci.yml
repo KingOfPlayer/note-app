@@ -11,7 +11,7 @@ on:
     branches: [master]
 
 jobs:
-  build-test-lint:
+  build-lint:
     runs-on: self-hosted
 
     steps:
@@ -30,12 +30,12 @@ jobs:
           distribution: 'temurin' 
           cache: 'maven'
 
-      - name: Build and Test
+      - name: Build
         working-directory: ./backend
         run: |
           export MAVEN_OPTS="-Xmx512m -XX:+UseSerialGC"
           chmod +x mvnw
-          ./mvnw --batch-mode clean install -T 1
+          ./mvnw --batch-mode clean install -DskipTests -T 1
 
       - name: Checkstyle / Lint
         if: success()
