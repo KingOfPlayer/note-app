@@ -8,6 +8,7 @@ import com.note_app.userservice.Entities.Models.User;
 import com.note_app.userservice.Services.IUserService;
 import com.note_app.userservice.dto.UpdateUserRequest;
 import com.note_app.userservice.dto.UserResponse;
+
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,11 +24,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-public class UserController {
+public class UserRestController {
 
     private final IUserService userService;
 
-    public UserController(IUserService userService) {
+    public UserRestController(IUserService userService) {
         this.userService = userService;
     }
 
@@ -42,9 +43,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> me(@RequestHeader("X-User-Id") String userId) {
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("Kullanici basligi (X-User-Id) eksik");
-        }
+        requireUser(userId);
         User user = userService.getUserById(userId);
         return ResponseEntity.ok(ApiResponse.ok(UserResponse.from(user)));
     }
@@ -60,7 +59,8 @@ public class UserController {
             @RequestHeader("X-User-Id") String userId,
             @PathVariable String id,
             @Valid @RequestBody UpdateUserRequest request) {
-        if (userId == null || !userId.equals(id)) {
+        requireUser(userId);
+        if (!userId.equals(id)) {
             throw new BadRequestException("Sadece kendi profilinizi guncelleyebilirsiniz");
         }
         User updated = userService.updateUser(id, request);
@@ -71,10 +71,17 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> delete(
             @RequestHeader("X-User-Id") String userId,
             @PathVariable String id) {
-        if (userId == null || !userId.equals(id)) {
+        requireUser(userId);
+        if (!userId.equals(id)) {
             throw new BadRequestException("Sadece kendi hesabinizi silebilirsiniz");
         }
         userService.deleteUser(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "Hesap silindi"));
+    }
+
+    private void requireUser(String userId) {
+        if (userId == null || userId.isBlank()) {
+            throw new BadRequestException("Kullanici basligi (X-User-Id) eksik");
+        }
     }
 }
