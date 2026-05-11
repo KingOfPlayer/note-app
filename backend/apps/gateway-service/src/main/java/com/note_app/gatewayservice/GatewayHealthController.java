@@ -11,10 +11,11 @@ import com.note_app.commonutils.authguard.UserRoles;
 @RestController
 public class GatewayHealthController {
   @GetMapping("/health")
-  @AuthGuard(UserRoles.ADMIN) 
+  @AuthGuard(UserRoles.USER)
   public ResponseEntity<String> health(
       @RequestHeader(value = "X-User-Id", required = false) String userId,
-      @RequestHeader(value = "X-User-Role", required = false) String userRole) {
-    return ResponseEntity.ok("Gateway Service is healthy - Access granted for userId: " + userId + " with role: " + userRole);
+      @RequestHeader(value = "X-User-Role", required = false) String userRole,
+      @RequestHeader(value = "X-User-Email", required = false) String userEmail) {
+    return ResponseEntity.ok("Gateway Service is healthy - Access granted for userId: " + userId + " with role: " + userRole + " and email: " + userEmail);
   }
 }

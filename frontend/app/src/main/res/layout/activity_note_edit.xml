@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:title="Not" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <EditText
+                android:id="@+id/field_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Baslik"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:inputType="textCapSentences"
+                android:background="@android:color/transparent" />
+
+            <com.note_app.app.ui.widget.ColorPaletteView
+                android:id="@+id/palette"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginTop="8dp" />
+
+            <CheckBox
+                android:id="@+id/check_pinned"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sabitle"
+                android:layout_marginTop="8dp" />
+
+            <EditText
+                android:id="@+id/field_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Notunuzu yazin..."
+                android:gravity="top|start"
+                android:minLines="8"
+                android:inputType="textMultiLine|textCapSentences"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

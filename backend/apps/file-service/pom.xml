@@ -6,7 +6,7 @@
 		<groupId>com.note_app</groupId>
 		<artifactId>note-app-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath>../../pom</relativePath>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<groupId>com.note_app</groupId>
 	<artifactId>note-app-fileservice</artifactId>
@@ -41,6 +41,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.note_app</groupId>
+			<artifactId>note-app-common-utils</artifactId>
 		</dependency>
 
 		<dependency>

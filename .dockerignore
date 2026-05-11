@@ -1,0 +1,10 @@
+**/target/
+**/.git/
+**/node_modules/
+**/.idea/
+**/.vscode/
+**/.gradle/
+**/build/
+frontend/
+load-tests/
+*.md

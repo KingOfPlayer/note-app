@@ -1,0 +1,23 @@
+# Java / Maven
+**/target/
+*.class
+*.jar
+!**/.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+**/build/
+**/.gradle/
+
+# Logs
+*.log
