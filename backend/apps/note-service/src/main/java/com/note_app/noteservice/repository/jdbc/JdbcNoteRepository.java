@@ -52,12 +52,16 @@ public class JdbcNoteRepository implements INoteRepository {
             ps.setTimestamp(8, Timestamp.valueOf(now));
             return ps;
         }, keyHolder);
-        Number key = keyHolder.getKey();
-        if (key != null) {
-            note.setId(key.longValue());
-        } else if (keyHolder.getKeys() != null) {
+        if (keyHolder.getKeys() != null) {
             Object idVal = keyHolder.getKeys().get("id");
-            if (idVal instanceof Number n) note.setId(n.longValue());
+            if (idVal instanceof Number n) {
+                note.setId(n.longValue());
+            }
+        } else {
+            Number key = keyHolder.getKey();
+            if (key != null) {
+                note.setId(key.longValue());
+            }
         }
         note.setCreatedAt(now);
         note.setUpdatedAt(now);

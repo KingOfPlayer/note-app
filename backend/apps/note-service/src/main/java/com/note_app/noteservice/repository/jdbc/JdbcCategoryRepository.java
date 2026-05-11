@@ -47,12 +47,16 @@ public class JdbcCategoryRepository implements ICategoryRepository {
             ps.setTimestamp(5, Timestamp.valueOf(now));
             return ps;
         }, keyHolder);
-        Number key = keyHolder.getKey();
-        if (key != null) {
-            category.setId(key.longValue());
-        } else if (keyHolder.getKeys() != null) {
+        if (keyHolder.getKeys() != null) {
             Object idVal = keyHolder.getKeys().get("id");
-            if (idVal instanceof Number n) category.setId(n.longValue());
+            if (idVal instanceof Number n) {
+                category.setId(n.longValue());
+            }
+        } else {
+            Number key = keyHolder.getKey();
+            if (key != null) {
+                category.setId(key.longValue());
+            }
         }
         category.setCreatedAt(now);
         category.setUpdatedAt(now);

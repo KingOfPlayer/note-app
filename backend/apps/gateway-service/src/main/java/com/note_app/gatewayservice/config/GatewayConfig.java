@@ -31,11 +31,11 @@ public class GatewayConfig {
     @Bean
     public ServiceRegistry serviceRegistry() {
         ServiceRegistry registry = new ServiceRegistry();
-        registry.register("/api/users/", userServiceUrl);
-        registry.register("/api/auth/", userServiceUrl);
-        registry.register("/api/notes/", noteServiceUrl);
-        registry.register("/api/categories/", noteServiceUrl);
-        registry.register("/api/files/", fileServiceUrl);
+        registry.register("/api/users", userServiceUrl);
+        registry.register("/api/auth", userServiceUrl);
+        registry.register("/api/notes", noteServiceUrl);
+        registry.register("/api/categories", noteServiceUrl);
+        registry.register("/api/files", fileServiceUrl);
         return registry;
     }
 }

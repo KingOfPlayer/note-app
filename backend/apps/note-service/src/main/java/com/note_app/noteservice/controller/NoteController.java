@@ -36,8 +36,8 @@ public class NoteController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<Note>>> list(
             @RequestHeader("X-User-Id") String userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size) {
         requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(noteService.getUserNotes(userId, page, size)));
     }
@@ -45,7 +45,7 @@ public class NoteController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Note>> get(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
         requireUser(userId);
         Note note = noteService.getById(id);
         if (!note.getUserId().equals(userId)) {
@@ -68,7 +68,7 @@ public class NoteController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Note>> update(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody NoteRequest request) {
         requireUser(userId);
         Note existing = noteService.getById(id);
@@ -83,7 +83,7 @@ public class NoteController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
         requireUser(userId);
         Note existing = noteService.getById(id);
         if (!existing.getUserId().equals(userId)) {
@@ -96,8 +96,8 @@ public class NoteController {
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<Note>>> search(
             @RequestHeader("X-User-Id") String userId,
-            @RequestParam(required = false, defaultValue = "all") String type,
-            @RequestParam String q) {
+            @RequestParam(name = "type", required = false, defaultValue = "all") String type,
+            @RequestParam(name = "q") String q) {
         requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(noteService.search(userId, type, q)));
     }
@@ -111,7 +111,7 @@ public class NoteController {
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<ApiResponse<List<Note>>> byCategory(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable Long categoryId) {
+            @PathVariable("categoryId") Long categoryId) {
         requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(noteService.getUserNotesByCategory(userId, categoryId)));
     }
@@ -119,7 +119,7 @@ public class NoteController {
     @PostMapping("/{id}/toggle-pin")
     public ResponseEntity<ApiResponse<Note>> togglePin(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
         requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(noteService.togglePin(userId, id), "Sabitleme durumu degisti"));
     }

@@ -38,12 +38,14 @@ public class ProxyController {
     public ResponseEntity<byte[]> proxy(HttpServletRequest request,
                                         @RequestBody(required = false) byte[] body) {
         String path = request.getRequestURI();
+        System.out.println("Incoming request: " + request.getMethod() + " " + path);
         String target = registry.resolve(path);
         if (target == null) {
             throw new NotFoundExecption("Yonlendirme tanimi bulunamadi: " + path);
         }
 
         String query = request.getQueryString();
+        System.out.println("Proxying to: " + target + path + (query != null ? "?" + query : ""));
         String url = target + path + (query != null ? "?" + query : "");
 
         HttpHeaders headers = new HttpHeaders();
