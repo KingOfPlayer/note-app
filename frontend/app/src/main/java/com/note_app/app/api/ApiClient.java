@@ -55,10 +55,9 @@ public class ApiClient {
     }
 
     private void applyAuth(Request.Builder b) {
-        String userId = session.getUserId();
-        if (userId != null) {
-            b.header("X-User-Id", userId);
-            b.header("X-User-Role", session.getRole() != null ? session.getRole() : "USER");
+        String token = session.getToken();
+        if (token != null && !token.isBlank()) {
+            b.header("Authorization", "Bearer " + token);
         }
     }
 

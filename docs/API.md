@@ -1,6 +1,8 @@
 # API Dokümantasyonu
 
-Tüm istekler Gateway üzerinden `http://localhost:8080` adresine atılır. JSON içerik tipi varsayılır (`application/json`). Kimlik gerektiren uçlar `X-User-Id` ve `X-User-Role` başlıklarını bekler.
+Tüm istekler Gateway üzerinden `http://localhost:8080` adresine atılır. JSON içerik tipi varsayılır (`application/json`).
+
+**Kimlik doğrulama**: `Authorization: Bearer <jwt>` başlığı gönderilir. Gateway içindeki `AuthMiddlewareFilter` token'ı çözer ve aşağı servislere `X-User-Id`, `X-User-Role`, `X-User-Email` başlıklarını ekler. Mobil/web istemci sadece JWT göndermek zorundadır; X-User-* başlıkları istemciden gönderilse bile filter spoofing'i engellemek için onları siler.
 
 ## Auth — `/api/auth`
 
@@ -52,8 +54,9 @@ PUT gövdesi: `{ "name": "Yeni Ad", "email": "yeni@test.com" }` — alanlar iste
 
 ### Örnek
 ```bash
-curl -H "X-User-Id: u1" -H "X-User-Role: USER" \
-  http://localhost:8080/api/notes/search?type=title&q=alisveris
+TOKEN="eyJhbGciOiJIUzI1NiJ9..."   # /api/auth/login yanıtından alınır
+curl -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:8080/api/notes/search?type=title&q=alisveris"
 ```
 
 ## Categories — `/api/categories`

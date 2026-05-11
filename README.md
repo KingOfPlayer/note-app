@@ -15,7 +15,7 @@ Spring Boot tabanlı mikroservis backend, PostgreSQL + MongoDB veri katmanı, An
 
 ## Özellikler
 
-- **Kayıt / Giriş**: BCrypt ile parola özetleme, oturum sonrası `X-User-Id` + `X-User-Role` başlıkları ile yetkilendirme.
+- **Kayıt / Giriş**: BCrypt ile parola özetleme, JWT (jjwt 0.11.5) ile oturum. Gateway'deki `AuthMiddlewareFilter` token'ı çözer ve `X-User-Id`/`X-User-Role`/`X-User-Email` başlıklarını aşağı servislere geçirir. İstemcinin spoof etmesini engellemek için bu başlıklar gelen istekten önce silinir.
 - **Not yönetimi**: Oluştur, listele (sayfalı), arama (başlık / içerik / tüm alanlar), kategori filtresi, sabitleme, silme.
 - **Kategori yönetimi**: Kullanıcı bazlı kategori CRUD.
 - **Dosya yönetimi**: MongoDB GridFS üzerinden ek dosya yükleme / indirme.
@@ -99,18 +99,19 @@ classDiagram
 ```mermaid
 sequenceDiagram
     participant App as Android
-    participant GW as Gateway
+    participant GW as Gateway (AuthMiddlewareFilter)
     participant US as User Service
     participant NS as Note Service
     participant DB as PostgreSQL
 
-    App->>GW: POST /api/auth/login
-    GW->>US: forward
-    US-->>GW: 200 + token
-    GW-->>App: 200 + token
+    App->>GW: POST /api/auth/login {email,password}
+    GW->>US: forward (token yok, public endpoint)
+    US-->>GW: 200 + JWT
+    GW-->>App: 200 + JWT
 
-    App->>GW: POST /api/notes (X-User-Id)
-    GW->>NS: forward
+    App->>GW: POST /api/notes  Authorization: Bearer <jwt>
+    Note over GW: Filter JWT'yi verify eder,<br/>X-User-Id/Role/Email header'ı ekler
+    GW->>NS: forward (X-User-Id eklenmiş)
     NS->>DB: INSERT INTO notes
     DB-->>NS: id
     NS-->>GW: 201 + note

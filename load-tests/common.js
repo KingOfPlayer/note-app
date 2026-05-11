@@ -26,8 +26,7 @@ export function registerUser(suffix) {
 export function authHeaders(user) {
   return {
     'Content-Type': 'application/json',
-    'X-User-Id': user.id,
-    'X-User-Role': 'USER',
+    'Authorization': 'Bearer ' + user.token,
   };
 }
 

@@ -26,16 +26,21 @@ flowchart TB
 ## Servis Sorumlulukları
 
 ### Gateway Service (5000 / dış 8080)
-- `/api/auth/**`, `/api/users/**` → user-service
-- `/api/notes/**`, `/api/categories/**` → note-service
-- `/api/files/**` → file-service
+- **AuthMiddlewareFilter** (`OncePerRequestFilter`, HIGHEST_PRECEDENCE):
+  1. İstekten `X-User-*` başlıklarını siler (spoofing engeli).
+  2. `Authorization: Bearer <jwt>` varsa `JWTService.verifyAndDecode` ile doğrular, başarısızsa `401`.
+  3. Geçerliyse `X-User-Id`, `X-User-Role`, `X-User-Email` başlıklarını isteğe ekler.
+- **MutableHttpServletRequest** wrapper'ı header değiştirilebilir kılar (Servlet API yalnız okumaya izin verir).
+- **ProxyController** filter'dan sonra çalışır: `ServiceRegistry`'den hedef servisi bulur, RestTemplate ile forward eder.
 - Eşleşmeyen yola `404`, hedef ulaşılamazsa `503` döner.
+- Routing tablosu: `/api/auth/**`, `/api/users/**` → user-service · `/api/notes/**`, `/api/categories/**` → note-service · `/api/files/**` → file-service.
 
 ### User Service (5001)
 - MongoDB üzerinde `users` koleksiyonu.
-- BCrypt ile parola özetleme (`PasswordConfig`).
-- `/api/auth/register`, `/api/auth/login`, `/api/users/me`, `/api/users/{id}`.
-- Login sonrası Base64 ile kodlanmış basit token (`{userId}:{role}`) döner — istemci her isteğe `X-User-Id` ve `X-User-Role` başlıklarını ekler.
+- BCrypt ile parola özetleme (`CryptoConfig` + `CryptoService`).
+- JWT üretim (`JWTService`, jjwt 0.11.5, HS256 imza, 24 saat geçerlilik).
+- `/api/auth/register`, `/api/auth/login` JWT döner; `/api/users/me`, `/api/users/{id}` için aşağı servisler gateway'in eklediği `X-User-Id`'i okur.
+- `SecurityConfig` Spring Security'i stateless tutar; CSRF kapalı; tüm istekler `permitAll` (gerçek kontrol gateway + AuthGuard üzerinde).
 
 ### Note Service (5002)
 - **PostgreSQL + JdbcTemplate**. ORM kullanılmaz; `RowMapper` ile manuel eşleme yapılır.
