@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -50,6 +51,12 @@ public class ApiClient {
 
     public String delete(String path) throws IOException {
         Request.Builder b = new Request.Builder().url(baseUrl + path).delete();
+        applyAuth(b);
+        return execute(b.build());
+    }
+
+    public String postMultipart(String path, MultipartBody body) throws IOException {
+        Request.Builder b = new Request.Builder().url(baseUrl + path).post(body);
         applyAuth(b);
         return execute(b.build());
     }
