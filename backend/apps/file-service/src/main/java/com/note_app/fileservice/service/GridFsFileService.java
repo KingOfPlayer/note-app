@@ -2,6 +2,7 @@ package com.note_app.fileservice.service;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.note_app.commonutils.exception.BadRequestException;
+import com.note_app.commonutils.exception.ErrorMessages;
 import com.note_app.commonutils.exception.ForbiddenException;
 import com.note_app.commonutils.exception.NotFoundException;
 import com.note_app.fileservice.dto.FileMetadataResponse;
@@ -33,7 +34,7 @@ public class GridFsFileService implements IFileService {
     @Override
     public FileMetadataResponse upload(String userId, Long noteId, MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
-            throw new BadRequestException("Dosya bos olamaz");
+            throw new BadRequestException(ErrorMessages.FILE_EMPTY);
         }
         Document meta = new Document();
         meta.put("userId", userId);
@@ -87,16 +88,16 @@ public class GridFsFileService implements IFileService {
         try {
             oid = new ObjectId(fileId);
         } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Gecersiz dosya kimligi");
+            throw new BadRequestException(ErrorMessages.FILE_ID_INVALID);
         }
         GridFSFile gridFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(oid)));
         if (gridFile == null) {
-            throw new NotFoundException("Dosya bulunamadi: " + fileId);
+            throw new NotFoundException(ErrorMessages.withId(ErrorMessages.FILE_NOT_FOUND, fileId));
         }
         Document md = gridFile.getMetadata();
         Object owner = md != null ? md.get("userId") : null;
         if (owner == null || !owner.equals(userId)) {
-            throw new ForbiddenException("Bu dosyaya erisme yetkiniz yok");
+            throw new ForbiddenException(ErrorMessages.FILE_FORBIDDEN_OTHER_USER);
         }
         return gridFile;
     }

@@ -2,6 +2,7 @@ package com.note_app.userservice.Services;
 
 import com.note_app.commonutils.exception.BadRequestException;
 import com.note_app.commonutils.exception.ConflictException;
+import com.note_app.commonutils.exception.ErrorMessages;
 import com.note_app.commonutils.exception.NotFoundException;
 import com.note_app.commonutils.exception.UnauthorizedException;
 import com.note_app.userservice.Entities.Models.User;
@@ -36,13 +37,13 @@ public class UserService implements IUserService {
     @Override
     public User registerUser(User user) {
         if (user.email() == null || user.email().isBlank()) {
-            throw new BadRequestException("E-posta bos olamaz");
+            throw new BadRequestException(ErrorMessages.USER_EMAIL_BLANK);
         }
         if (user.password() == null || user.password().length() < 6) {
-            throw new BadRequestException("Sifre en az 6 karakter olmalidir");
+            throw new BadRequestException(ErrorMessages.USER_PASSWORD_SHORT);
         }
         if (userRepository.findByEmail(user.email()).isPresent()) {
-            throw new ConflictException("Bu e-posta zaten kayitli");
+            throw new ConflictException(ErrorMessages.USER_EMAIL_EXISTS);
         }
         User toSave = new User(
                 null,
@@ -57,7 +58,7 @@ public class UserService implements IUserService {
     @Override
     public User getUserById(String id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Kullanici bulunamadi: " + id));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.withId(ErrorMessages.USER_NOT_FOUND, id)));
     }
 
     @Override
@@ -69,7 +70,7 @@ public class UserService implements IUserService {
     @Override
     public void deleteUser(String id) {
         if (!userRepository.existsById(id)) {
-            throw new NotFoundException("Kullanici bulunamadi: " + id);
+            throw new NotFoundException(ErrorMessages.withId(ErrorMessages.USER_NOT_FOUND, id));
         }
         userRepository.deleteById(id);
     }
@@ -80,7 +81,7 @@ public class UserService implements IUserService {
         String name = request.getName() != null ? request.getName() : existing.name();
         String email = request.getEmail() != null ? request.getEmail() : existing.email();
         if (!email.equals(existing.email()) && userRepository.findByEmail(email).isPresent()) {
-            throw new ConflictException("Bu e-posta zaten kayitli");
+            throw new ConflictException(ErrorMessages.USER_EMAIL_EXISTS);
         }
         User updated = new User(existing.id(), name, email, existing.password(), existing.role());
         return userRepository.save(updated);
@@ -89,12 +90,12 @@ public class UserService implements IUserService {
     @Override
     public String login(User user) {
         if (user.email() == null || user.password() == null) {
-            throw new BadRequestException("E-posta ve sifre zorunludur");
+            throw new BadRequestException(ErrorMessages.AUTH_INVALID_CREDENTIALS);
         }
         User existing = userRepository.findByEmail(user.email())
-                .orElseThrow(() -> new UnauthorizedException("E-posta veya sifre hatali"));
+                .orElseThrow(() -> new UnauthorizedException(ErrorMessages.AUTH_INVALID_CREDENTIALS));
         if (!cryptoService.verifyPassword(user.password(), existing.password())) {
-            throw new UnauthorizedException("E-posta veya sifre hatali");
+            throw new UnauthorizedException(ErrorMessages.AUTH_INVALID_CREDENTIALS);
         }
         return jwtService.generateToken(existing);
     }

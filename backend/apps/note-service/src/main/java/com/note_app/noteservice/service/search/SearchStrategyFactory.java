@@ -1,6 +1,7 @@
 package com.note_app.noteservice.service.search;
 
 import com.note_app.commonutils.exception.BadRequestException;
+import com.note_app.commonutils.exception.ErrorMessages;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -24,7 +25,7 @@ public class SearchStrategyFactory {
         }
         SearchStrategy strategy = strategies.get(type.toLowerCase());
         if (strategy == null) {
-            throw new BadRequestException("Bilinmeyen arama tipi: " + type);
+            throw new BadRequestException(ErrorMessages.withId(ErrorMessages.SEARCH_TYPE_UNKNOWN, type));
         }
         return strategy;
     }

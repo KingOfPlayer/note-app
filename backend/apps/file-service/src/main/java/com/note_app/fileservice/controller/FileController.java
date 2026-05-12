@@ -2,6 +2,7 @@ package com.note_app.fileservice.controller;
 
 import com.note_app.commonutils.authguard.AuthGuard;
 import com.note_app.commonutils.authguard.UserRoles;
+import com.note_app.commonutils.exception.ErrorMessages;
 import com.note_app.commonutils.exception.InternalServerException;
 import com.note_app.commonutils.generic.ApiResponse;
 import com.note_app.fileservice.dto.FileMetadataResponse;
@@ -47,7 +48,7 @@ public class FileController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.ok(meta, "Dosya yuklendi"));
         } catch (IOException e) {
-            throw new InternalServerException("Dosya yuklenirken hata olustu");
+            throw new InternalServerException(ErrorMessages.FILE_UPLOAD_FAILED);
         }
     }
 
@@ -79,7 +80,7 @@ public class FileController {
                     .contentType(type)
                     .body(new InputStreamResource(is));
         } catch (IOException e) {
-            throw new InternalServerException("Dosya indirilirken hata olustu");
+            throw new InternalServerException(ErrorMessages.FILE_DOWNLOAD_FAILED);
         }
     }
 

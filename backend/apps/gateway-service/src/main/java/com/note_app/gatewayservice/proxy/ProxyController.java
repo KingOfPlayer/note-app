@@ -1,5 +1,6 @@
 package com.note_app.gatewayservice.proxy;
 
+import com.note_app.commonutils.exception.ErrorMessages;
 import com.note_app.commonutils.exception.NotFoundException;
 import com.note_app.commonutils.exception.ServiceUnavailableException;
 import com.note_app.gatewayservice.config.ServiceRegistry;
@@ -41,7 +42,7 @@ public class ProxyController {
         System.out.println("Incoming request: " + request.getMethod() + " " + path);
         String target = registry.resolve(path);
         if (target == null) {
-            throw new NotFoundException("Yonlendirme tanimi bulunamadi: " + path);
+            throw new NotFoundException(ErrorMessages.withId(ErrorMessages.GATEWAY_NO_ROUTE, path));
         }
 
         String query = request.getQueryString();
@@ -73,7 +74,7 @@ public class ProxyController {
                     .headers(filterHeaders(ex.getResponseHeaders()))
                     .body(ex.getResponseBodyAsByteArray());
         } catch (ResourceAccessException ex) {
-            throw new ServiceUnavailableException("Hedef servise ulasilamiyor: " + target);
+            throw new ServiceUnavailableException(ErrorMessages.withId(ErrorMessages.GATEWAY_TARGET_DOWN, target));
         }
     }
 

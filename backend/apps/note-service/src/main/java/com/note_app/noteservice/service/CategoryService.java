@@ -1,6 +1,8 @@
 package com.note_app.noteservice.service;
 
 import com.note_app.commonutils.exception.BadRequestException;
+import com.note_app.commonutils.exception.ConflictException;
+import com.note_app.commonutils.exception.ErrorMessages;
 import com.note_app.commonutils.generic.AbstractCrudService;
 import com.note_app.noteservice.entity.Category;
 import com.note_app.noteservice.repository.ICategoryRepository;
@@ -26,10 +28,10 @@ public class CategoryService extends AbstractCrudService<Category, Long> impleme
     @Override
     protected void beforeCreate(Category entity) {
         if (entity.getName() == null || entity.getName().isBlank()) {
-            throw new BadRequestException("Kategori adi bos olamaz");
+            throw new BadRequestException(ErrorMessages.CATEGORY_NAME_BLANK);
         }
         if (entity.getName().length() > 100) {
-            throw new BadRequestException("Kategori adi en fazla 100 karakter olabilir");
+            throw new BadRequestException(ErrorMessages.CATEGORY_NAME_TOO_LONG);
         }
     }
 
@@ -42,7 +44,7 @@ public class CategoryService extends AbstractCrudService<Category, Long> impleme
     public Category createForUser(String userId, Category category) {
         category.setUserId(userId);
         if (categoryRepository.findByUserIdAndName(userId, category.getName()).isPresent()) {
-            throw new BadRequestException("Bu isimde bir kategoriniz zaten var");
+            throw new ConflictException(ErrorMessages.CATEGORY_NAME_EXISTS);
         }
         return create(category);
     }
