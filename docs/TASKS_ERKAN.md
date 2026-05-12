@@ -80,7 +80,7 @@ git push -u origin erkan-mobil-extra
 - Auth flow'u artık JWT'ye dayalı. Mobil tarafta `SessionStore` token saklıyor, `ApiClient` her isteğe `Authorization: Bearer <token>` ekliyor.
 - Backend tarafındaki tüm controller'lar `X-User-Id` header'ı bekliyor — bu header'ı gateway, JWT'den çıkarıp set ediyor. Yani downstream servislerde ekstra iş yok.
 - API yanıtları `ApiResponse<T>` formatında: `{success, data, message, timestamp}`. Client `data` içinden okur.
-- `NotFoundExecption` (typo, bilerek bırakıldı, çok import etkilenir).
+- `NotFoundException` (typo, bilerek bırakıldı, çok import etkilenir).
 
 ## Kontrat Noktaları
 

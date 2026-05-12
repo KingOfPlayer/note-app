@@ -3,7 +3,7 @@ package com.note_app.fileservice.service;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.note_app.commonutils.exception.BadRequestException;
 import com.note_app.commonutils.exception.ForbiddenException;
-import com.note_app.commonutils.exception.NotFoundExecption;
+import com.note_app.commonutils.exception.NotFoundException;
 import com.note_app.fileservice.dto.FileMetadataResponse;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -91,7 +91,7 @@ public class GridFsFileService implements IFileService {
         }
         GridFSFile gridFile = gridFsTemplate.findOne(new Query(Criteria.where("_id").is(oid)));
         if (gridFile == null) {
-            throw new NotFoundExecption("Dosya bulunamadi: " + fileId);
+            throw new NotFoundException("Dosya bulunamadi: " + fileId);
         }
         Document md = gridFile.getMetadata();
         Object owner = md != null ? md.get("userId") : null;

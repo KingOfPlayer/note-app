@@ -2,7 +2,7 @@ package com.note_app.userservice.Services;
 
 import com.note_app.commonutils.exception.BadRequestException;
 import com.note_app.commonutils.exception.ConflictException;
-import com.note_app.commonutils.exception.NotFoundExecption;
+import com.note_app.commonutils.exception.NotFoundException;
 import com.note_app.commonutils.exception.UnauthorizedException;
 import com.note_app.userservice.Entities.Models.User;
 import com.note_app.userservice.Repositories.UserRepository;
@@ -57,7 +57,7 @@ public class UserService implements IUserService {
     @Override
     public User getUserById(String id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundExecption("Kullanici bulunamadi: " + id));
+                .orElseThrow(() -> new NotFoundException("Kullanici bulunamadi: " + id));
     }
 
     @Override
@@ -69,7 +69,7 @@ public class UserService implements IUserService {
     @Override
     public void deleteUser(String id) {
         if (!userRepository.existsById(id)) {
-            throw new NotFoundExecption("Kullanici bulunamadi: " + id);
+            throw new NotFoundException("Kullanici bulunamadi: " + id);
         }
         userRepository.deleteById(id);
     }

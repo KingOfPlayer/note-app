@@ -91,7 +91,7 @@ flowchart TB
 | `BadRequestException` | 400 |
 | `UnauthorizedException` | 401 |
 | `ForbiddenException` | 403 |
-| `NotFoundExecption` | 404 |
+| `NotFoundException` | 404 |
 | `InternalServerException` | 500 |
 | `ServiceUnavailableException` | 503 |
 | `GatewayTimeoutException` | 504 |

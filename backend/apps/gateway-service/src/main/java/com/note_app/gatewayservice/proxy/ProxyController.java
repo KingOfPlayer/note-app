@@ -1,6 +1,6 @@
 package com.note_app.gatewayservice.proxy;
 
-import com.note_app.commonutils.exception.NotFoundExecption;
+import com.note_app.commonutils.exception.NotFoundException;
 import com.note_app.commonutils.exception.ServiceUnavailableException;
 import com.note_app.gatewayservice.config.ServiceRegistry;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,7 +41,7 @@ public class ProxyController {
         System.out.println("Incoming request: " + request.getMethod() + " " + path);
         String target = registry.resolve(path);
         if (target == null) {
-            throw new NotFoundExecption("Yonlendirme tanimi bulunamadi: " + path);
+            throw new NotFoundException("Yonlendirme tanimi bulunamadi: " + path);
         }
 
         String query = request.getQueryString();

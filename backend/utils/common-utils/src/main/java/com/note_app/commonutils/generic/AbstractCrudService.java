@@ -1,6 +1,6 @@
 package com.note_app.commonutils.generic;
 
-import com.note_app.commonutils.exception.NotFoundExecption;
+import com.note_app.commonutils.exception.NotFoundException;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ public abstract class AbstractCrudService<T extends BaseEntity<ID>, ID> implemen
     @Override
     public T getById(ID id) {
         return repository.findById(id)
-                .orElseThrow(() -> new NotFoundExecption(entityName() + " bulunamadi: " + id));
+                .orElseThrow(() -> new NotFoundException(entityName() + " bulunamadi: " + id));
     }
 
     @Override
@@ -51,7 +51,7 @@ public abstract class AbstractCrudService<T extends BaseEntity<ID>, ID> implemen
     @Override
     public void delete(ID id) {
         if (!repository.existsById(id)) {
-            throw new NotFoundExecption(entityName() + " bulunamadi: " + id);
+            throw new NotFoundException(entityName() + " bulunamadi: " + id);
         }
         repository.deleteById(id);
     }
