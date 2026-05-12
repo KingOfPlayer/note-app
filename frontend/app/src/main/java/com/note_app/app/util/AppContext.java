@@ -12,7 +12,7 @@ import com.note_app.app.session.SessionStore;
 
 public class AppContext {
 
-    public static final String BASE_URL = "http://10.0.2.2:8080";
+    public static final String BASE_URL = "http://192.168.1.105:8080";
 
     private final SessionStore session;
     private final ApiClient client;
