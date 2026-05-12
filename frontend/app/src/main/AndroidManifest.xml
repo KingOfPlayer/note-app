@@ -35,6 +35,18 @@
             android:name=".ui.NoteEditActivity"
             android:exported="false"
             android:theme="@style/Theme.Notes" />
+        <activity
+            android:name=".ui.SearchActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Notes" />
+        <activity
+            android:name=".ui.CategoryListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Notes" />
+        <activity
+            android:name=".ui.ProfileActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Notes" />
     </application>
 
 </manifest>

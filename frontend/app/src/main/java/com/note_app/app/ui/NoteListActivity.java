@@ -87,7 +87,20 @@ public class NoteListActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_logout) {
+        int id = item.getItemId();
+        if (id == R.id.action_search) {
+            startActivity(new Intent(this, SearchActivity.class));
+            return true;
+        }
+        if (id == R.id.action_categories) {
+            startActivity(new Intent(this, CategoryListActivity.class));
+            return true;
+        }
+        if (id == R.id.action_profile) {
+            startActivity(new Intent(this, ProfileActivity.class));
+            return true;
+        }
+        if (id == R.id.action_logout) {
             app.session().clear();
             startActivity(new Intent(this, LoginActivity.class));
             finishAffinity();
