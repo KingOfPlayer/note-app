@@ -5,6 +5,7 @@ import android.content.Context;
 import com.note_app.app.api.ApiClient;
 import com.note_app.app.api.AuthApi;
 import com.note_app.app.api.CategoryApi;
+import com.note_app.app.api.FileApi;
 import com.note_app.app.api.NoteApi;
 import com.note_app.app.api.UserApi;
 import com.note_app.app.session.SessionStore;
@@ -19,6 +20,7 @@ public class AppContext {
     private final NoteApi noteApi;
     private final CategoryApi categoryApi;
     private final UserApi userApi;
+    private final FileApi fileApi;
 
     public AppContext(Context context) {
         this.session = new SessionStore(context);
@@ -27,6 +29,7 @@ public class AppContext {
         this.noteApi = new NoteApi(client);
         this.categoryApi = new CategoryApi(client);
         this.userApi = new UserApi(client);
+        this.fileApi = new FileApi(client);
     }
 
     public SessionStore session() { return session; }
@@ -34,4 +37,5 @@ public class AppContext {
     public NoteApi notes() { return noteApi; }
     public CategoryApi categories() { return categoryApi; }
     public UserApi users() { return userApi; }
+    public FileApi files() { return fileApi; }
 }
