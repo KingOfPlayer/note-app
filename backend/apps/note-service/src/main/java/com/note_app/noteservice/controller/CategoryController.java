@@ -1,6 +1,7 @@
 package com.note_app.noteservice.controller;
 
-import com.note_app.commonutils.exception.BadRequestException;
+import com.note_app.commonutils.authguard.AuthGuard;
+import com.note_app.commonutils.authguard.UserRoles;
 import com.note_app.commonutils.exception.ForbiddenException;
 import com.note_app.commonutils.generic.ApiResponse;
 import com.note_app.noteservice.dto.CategoryRequest;
@@ -32,16 +33,16 @@ public class CategoryController {
     }
 
     @GetMapping
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<List<Category>>> list(@RequestHeader("X-User-Id") String userId) {
-        requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(categoryService.getUserCategories(userId)));
     }
 
     @PostMapping
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Category>> create(
             @RequestHeader("X-User-Id") String userId,
             @Valid @RequestBody CategoryRequest request) {
-        requireUser(userId);
         Category cat = new Category();
         cat.setName(request.getName());
         cat.setColor(request.getColor());
@@ -50,11 +51,11 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Category>> update(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody CategoryRequest request) {
-        requireUser(userId);
         Category existing = categoryService.getById(id);
         if (!existing.getUserId().equals(userId)) {
             throw new ForbiddenException("Baska bir kullanicinin kategorisini degistiremezsiniz");
@@ -65,21 +66,15 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Void>> delete(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable Long id) {
-        requireUser(userId);
+            @PathVariable("id") Long id) {
         Category existing = categoryService.getById(id);
         if (!existing.getUserId().equals(userId)) {
             throw new ForbiddenException("Baska bir kullanicinin kategorisini silemezsiniz");
         }
         categoryService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "Kategori silindi"));
-    }
-
-    private void requireUser(String userId) {
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("Kullanici basligi (X-User-Id) eksik");
-        }
     }
 }

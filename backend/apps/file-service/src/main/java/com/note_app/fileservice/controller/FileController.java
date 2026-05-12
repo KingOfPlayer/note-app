@@ -1,6 +1,7 @@
 package com.note_app.fileservice.controller;
 
-import com.note_app.commonutils.exception.BadRequestException;
+import com.note_app.commonutils.authguard.AuthGuard;
+import com.note_app.commonutils.authguard.UserRoles;
 import com.note_app.commonutils.exception.InternalServerException;
 import com.note_app.commonutils.generic.ApiResponse;
 import com.note_app.fileservice.dto.FileMetadataResponse;
@@ -36,11 +37,11 @@ public class FileController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<FileMetadataResponse>> upload(
             @RequestHeader("X-User-Id") String userId,
-            @RequestParam(required = false) Long noteId,
+            @RequestParam(name = "noteId", required = false) Long noteId,
             @RequestPart("file") MultipartFile file) {
-        requireUser(userId);
         try {
             FileMetadataResponse meta = fileService.upload(userId, noteId, file);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -51,18 +52,18 @@ public class FileController {
     }
 
     @GetMapping("/{id}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<FileMetadataResponse>> getMeta(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable String id) {
-        requireUser(userId);
+            @PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(fileService.getMetadata(userId, id)));
     }
 
     @GetMapping("/{id}/download")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<InputStreamResource> download(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable String id) {
-        requireUser(userId);
+            @PathVariable("id") String id) {
         try {
             FileMetadataResponse meta = fileService.getMetadata(userId, id);
             InputStream is = fileService.download(userId, id);
@@ -83,10 +84,10 @@ public class FileController {
     }
 
     @GetMapping
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<List<FileMetadataResponse>>> list(
             @RequestHeader("X-User-Id") String userId,
-            @RequestParam(required = false) Long noteId) {
-        requireUser(userId);
+            @RequestParam(name = "noteId", required = false) Long noteId) {
         if (noteId != null) {
             return ResponseEntity.ok(ApiResponse.ok(fileService.listForNote(userId, noteId)));
         }
@@ -94,17 +95,11 @@ public class FileController {
     }
 
     @DeleteMapping("/{id}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Void>> delete(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable String id) {
-        requireUser(userId);
+            @PathVariable("id") String id) {
         fileService.delete(userId, id);
         return ResponseEntity.ok(ApiResponse.ok(null, "Dosya silindi"));
-    }
-
-    private void requireUser(String userId) {
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("Kullanici basligi (X-User-Id) eksik");
-        }
     }
 }

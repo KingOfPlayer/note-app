@@ -1,6 +1,7 @@
 package com.note_app.noteservice.controller;
 
-import com.note_app.commonutils.exception.BadRequestException;
+import com.note_app.commonutils.authguard.AuthGuard;
+import com.note_app.commonutils.authguard.UserRoles;
 import com.note_app.commonutils.exception.ForbiddenException;
 import com.note_app.commonutils.generic.ApiResponse;
 import com.note_app.commonutils.generic.PageResponse;
@@ -34,19 +35,19 @@ public class NoteController {
     }
 
     @GetMapping
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<PageResponse<Note>>> list(
             @RequestHeader("X-User-Id") String userId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size) {
-        requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(noteService.getUserNotes(userId, page, size)));
     }
 
     @GetMapping("/{id}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Note>> get(
             @RequestHeader("X-User-Id") String userId,
             @PathVariable("id") Long id) {
-        requireUser(userId);
         Note note = noteService.getById(id);
         if (!note.getUserId().equals(userId)) {
             throw new ForbiddenException("Baska bir kullanicinin notuna erisemezsiniz");
@@ -55,10 +56,10 @@ public class NoteController {
     }
 
     @PostMapping
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Note>> create(
             @RequestHeader("X-User-Id") String userId,
             @Valid @RequestBody NoteRequest request) {
-        requireUser(userId);
         Note note = toEntity(request);
         note.setUserId(userId);
         Note created = noteService.create(note);
@@ -66,11 +67,11 @@ public class NoteController {
     }
 
     @PutMapping("/{id}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Note>> update(
             @RequestHeader("X-User-Id") String userId,
             @PathVariable("id") Long id,
             @Valid @RequestBody NoteRequest request) {
-        requireUser(userId);
         Note existing = noteService.getById(id);
         if (!existing.getUserId().equals(userId)) {
             throw new ForbiddenException("Baska bir kullanicinin notunu degistiremezsiniz");
@@ -81,10 +82,10 @@ public class NoteController {
     }
 
     @DeleteMapping("/{id}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Void>> delete(
             @RequestHeader("X-User-Id") String userId,
             @PathVariable("id") Long id) {
-        requireUser(userId);
         Note existing = noteService.getById(id);
         if (!existing.getUserId().equals(userId)) {
             throw new ForbiddenException("Baska bir kullanicinin notunu silemezsiniz");
@@ -94,40 +95,34 @@ public class NoteController {
     }
 
     @GetMapping("/search")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<List<Note>>> search(
             @RequestHeader("X-User-Id") String userId,
             @RequestParam(name = "type", required = false, defaultValue = "all") String type,
             @RequestParam(name = "q") String q) {
-        requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(noteService.search(userId, type, q)));
     }
 
     @GetMapping("/pinned")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<List<Note>>> pinned(@RequestHeader("X-User-Id") String userId) {
-        requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(noteService.getPinnedNotes(userId)));
     }
 
     @GetMapping("/category/{categoryId}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<List<Note>>> byCategory(
             @RequestHeader("X-User-Id") String userId,
             @PathVariable("categoryId") Long categoryId) {
-        requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(noteService.getUserNotesByCategory(userId, categoryId)));
     }
 
     @PostMapping("/{id}/toggle-pin")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Note>> togglePin(
             @RequestHeader("X-User-Id") String userId,
             @PathVariable("id") Long id) {
-        requireUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(noteService.togglePin(userId, id), "Sabitleme durumu degisti"));
-    }
-
-    private void requireUser(String userId) {
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("Kullanici basligi (X-User-Id) eksik");
-        }
     }
 
     private Note toEntity(NoteRequest req) {

@@ -42,24 +42,25 @@ public class UserRestController {
     }
 
     @GetMapping("/me")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<UserResponse>> me(@RequestHeader("X-User-Id") String userId) {
-        requireUser(userId);
         User user = userService.getUserById(userId);
         return ResponseEntity.ok(ApiResponse.ok(UserResponse.from(user)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> getOne(@PathVariable String id) {
+    @AuthGuard(UserRoles.USER)
+    public ResponseEntity<ApiResponse<UserResponse>> getOne(@PathVariable("id") String id) {
         User user = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.ok(UserResponse.from(user)));
     }
 
     @PutMapping("/{id}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<UserResponse>> update(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @Valid @RequestBody UpdateUserRequest request) {
-        requireUser(userId);
         if (!userId.equals(id)) {
             throw new BadRequestException("Sadece kendi profilinizi guncelleyebilirsiniz");
         }
@@ -68,20 +69,14 @@ public class UserRestController {
     }
 
     @DeleteMapping("/{id}")
+    @AuthGuard(UserRoles.USER)
     public ResponseEntity<ApiResponse<Void>> delete(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable String id) {
-        requireUser(userId);
+            @PathVariable("id") String id) {
         if (!userId.equals(id)) {
             throw new BadRequestException("Sadece kendi hesabinizi silebilirsiniz");
         }
         userService.deleteUser(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "Hesap silindi"));
-    }
-
-    private void requireUser(String userId) {
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("Kullanici basligi (X-User-Id) eksik");
-        }
     }
 }
