@@ -17,6 +17,7 @@ Spring Boot tabanlı mikroservis backend, PostgreSQL + MongoDB veri katmanı, An
 
 - **Kayıt / Giriş**: BCrypt ile parola özetleme, JWT (jjwt 0.11.5) ile oturum. Gateway'deki `AuthMiddlewareFilter` token'ı çözer ve `X-User-Id`/`X-User-Role`/`X-User-Email` başlıklarını aşağı servislere geçirir. İstemcinin spoof etmesini engellemek için bu başlıklar gelen istekten önce silinir.
 - **Not yönetimi**: Oluştur, listele (sayfalı), arama (başlık / içerik / tüm alanlar), kategori filtresi, sabitleme, silme.
+- **Markup içerik**: Notun içeriği düz metin, checkbox (`[ ]` / `[x]`) ve dosya referansı (`![file:id]`) içerebilir. `NoteContentParser` bu yapıyı `NoteContentNode` kalıtım hiyerarşisine (TextNode / ChecklistNode / ImageNode) çeviriyor.
 - **Kategori yönetimi**: Kullanıcı bazlı kategori CRUD.
 - **Dosya yönetimi**: MongoDB GridFS üzerinden ek dosya yükleme / indirme.
 - **API Gateway**: Tek giriş noktası (8080). İstekleri ilgili servise yönlendirir, hata vakalarında uygun HTTP kodu döner.
