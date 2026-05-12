@@ -13,6 +13,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.note_app.app.model.Note;
+import com.note_app.app.model.NoteContent;
 
 public class NoteCardView extends View {
 
@@ -30,6 +31,7 @@ public class NoteCardView extends View {
     private final float density;
 
     private Note note;
+    private String contentSummary = "";
 
     public NoteCardView(Context context) {
         this(context, null);
@@ -71,6 +73,12 @@ public class NoteCardView extends View {
             }
         } else {
             cardPaint.setColor(DEFAULT_COLOR);
+        }
+        if (note != null && note.getContent() != null) {
+            NoteContent parsed = NoteContent.parse(note.getContent());
+            contentSummary = parsed.summary(160).replace('\n', ' ');
+        } else {
+            contentSummary = "";
         }
         invalidate();
     }
@@ -120,7 +128,7 @@ public class NoteCardView extends View {
 
         float bodyTop = innerTop + titlePaint.getTextSize() + 12 * density;
 
-        String content = note.getContent() == null ? "" : note.getContent().replace('\n', ' ');
+        String content = contentSummary;
         float bodyMaxWidth = innerRight - innerLeft;
         CharSequence line1 = TextUtils.ellipsize(content, bodyPaint, bodyMaxWidth, TextUtils.TruncateAt.END);
         canvas.drawText(line1, 0, line1.length(), innerLeft, bodyTop + bodyPaint.getTextSize(), bodyPaint);
