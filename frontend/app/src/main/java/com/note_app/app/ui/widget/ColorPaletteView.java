@@ -87,18 +87,23 @@ public class ColorPaletteView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            float padding = 8 * density;
-            float available = getWidth() - 2 * padding;
-            float step = available / PALETTE.length;
-            int index = (int) ((event.getX() - padding) / step);
-            if (index >= 0 && index < PALETTE.length) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                return true;
+
+            case MotionEvent.ACTION_UP:
+                float padding = 8 * density;
+                float available = getWidth() - 2 * padding;
+                float step = available / PALETTE.length;
+                int index = (int) ((event.getX() - padding) / step);
+
+                index = Math.max(0, Math.min(index, PALETTE.length - 1));
+
                 selectedIndex = index;
                 invalidate();
                 if (listener != null) listener.onColorSelected(PALETTE[index]);
                 performClick();
                 return true;
-            }
         }
         return super.onTouchEvent(event);
     }

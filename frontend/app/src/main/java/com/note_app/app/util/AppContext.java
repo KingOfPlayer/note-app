@@ -9,10 +9,11 @@ import com.note_app.app.api.FileApi;
 import com.note_app.app.api.NoteApi;
 import com.note_app.app.api.UserApi;
 import com.note_app.app.session.SessionStore;
+import com.note_app.app.BuildConfig;
 
 public class AppContext {
 
-    public static final String BASE_URL = "http://192.168.1.105:8080";
+    public static final String BASE_URL = BuildConfig.BASE_URL;
 
     private final SessionStore session;
     private final ApiClient client;
