@@ -9,12 +9,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -57,8 +61,36 @@ public class ProxyController {
             headers.put(name, Collections.list(request.getHeaders(name)));
         }
 
-        HttpEntity<byte[]> entity = new HttpEntity<>(body, headers);
+        HttpEntity<?> entity;
         HttpMethod method = HttpMethod.valueOf(request.getMethod());
+
+        String contentType = request.getContentType();
+        if (contentType != null && contentType.toLowerCase().startsWith("multipart/")) {
+            MultiValueMap<String, Object> multipartBody = new LinkedMultiValueMap<>();
+
+            if (request instanceof MultipartHttpServletRequest multipartRequest) {
+                multipartRequest.getParameterMap().forEach((key, values) -> {
+                    for (String value : values) {
+                        multipartBody.add(key, value);
+                    }
+                });
+
+                // Add file parts
+                multipartRequest.getMultiFileMap().forEach((key, files) -> {
+                    for (MultipartFile file : files) {
+                        multipartBody.add(key, file.getResource());
+                    }
+                });
+            }
+
+           
+            headers.remove(HttpHeaders.CONTENT_LENGTH);
+            headers.remove(HttpHeaders.CONTENT_TYPE);
+
+            entity = new HttpEntity<>(multipartBody, headers);
+        } else {
+            entity = new HttpEntity<>(body, headers);
+        }
 
         try {
             ResponseEntity<byte[]> response = restTemplate.exchange(url, method, entity, byte[].class);
