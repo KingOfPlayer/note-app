@@ -23,7 +23,7 @@ flowchart TB
 
 ## Servisler
 
-**Gateway (5000 / dış 8080).** İstek geldiğinde önce `AuthMiddlewareFilter` çalışıyor: `Authorization: Bearer <jwt>` başlığı varsa doğruluyor, geçerliyse kullanıcı bilgisini `X-User-Id`/`X-User-Role`/`X-User-Email` başlıklarına dönüştürüyor. Sonra `ProxyController` yola göre hedef servisi seçip RestTemplate ile forward ediyor.
+**Gateway (Docker Compose: container 5000 / host 8080; yerelde varsayılan 5000).** İstek geldiğinde önce `AuthMiddlewareFilter` çalışır: `Authorization: Bearer <jwt>` başlığı varsa doğrular, geçerliyse kullanıcı bilgisini `X-User-Id`/`X-User-Role`/`X-User-Email` başlıklarına dönüştürür. İstemciden gelen `X-User-*` başlıklarını spoofing'i engellemek için önce siler. Sonra `ProxyController` yola göre hedef servisi `ServiceRegistry` üzerinden seçip RestTemplate ile forward eder.
 
 **User Service (5001).** MongoDB'de `users` koleksiyonu. BCrypt ile parola özetleme, jjwt 0.11.5 ile JWT üretimi (HS256, 24 saat). `/api/auth/register` ve `/api/auth/login` JWT döner.
 
@@ -73,3 +73,5 @@ Yanıt gövdesi: `{ timestamp, status, error, message }`. Validation hatalarınd
 ## Yetki
 
 Her korumalı endpoint başında `@AuthGuard(UserRoles.USER)` ya da `@AuthGuard(UserRoles.ADMIN)` annotation'ı var. `AuthGuardAspect` (AOP) request başlıklarını kontrol ediyor, başlık yoksa BadRequest, rol uymuyorsa Unauthorized fırlatıyor. Gerçek JWT doğrulaması zaten gateway'de yapıldığı için downstream servisler sadece header güveniyor.
+
+Korumalı endpoint'lerde beklenen minimum başlıklar: `X-User-Id` ve `X-User-Role`. `AuthGuardAspect` bu değerleri doğruladıktan sonra controller içinde kullanılabilmesi için request attribute olarak da ekler (`userId`, `userRole`).

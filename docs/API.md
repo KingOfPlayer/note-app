@@ -1,8 +1,10 @@
 # API Dokümantasyonu
 
-Tüm istekler Gateway üzerinden `http://localhost:8080` adresine atılır. JSON içerik tipi varsayılır (`application/json`).
+Docker Compose ile çalıştırıldığında tüm istekler Gateway üzerinden `http://localhost:8080` adresine atılır. Çoğu endpoint JSON içerik tipi ile çalışır (`application/json`). Dosya yükleme endpoint'i `multipart/form-data` kullanır.
 
-**Kimlik doğrulama**: `Authorization: Bearer <jwt>` başlığı gönderilir. Gateway içindeki `AuthMiddlewareFilter` token'ı çözer ve aşağı servislere `X-User-Id`, `X-User-Role`, `X-User-Email` başlıklarını ekler. Mobil/web istemci sadece JWT göndermek zorundadır; X-User-* başlıkları istemciden gönderilse bile filter spoofing'i engellemek için onları siler.
+**Kimlik doğrulama**: `Authorization: Bearer <jwt>` başlığı gönderilir. Gateway içindeki `AuthMiddlewareFilter` token'ı çözer ve aşağı servislere `X-User-Id`, `X-User-Role`, `X-User-Email` başlıklarını ekler. İstemci sadece JWT göndermek zorundadır; `X-User-*` başlıkları istemciden gönderilse bile filter spoofing'i engellemek için onları siler.
+
+Not: Downstream servislerde korumalı endpoint'ler `X-User-Id` ve `X-User-Role` başlıklarını zorunlu görür. Bu başlıklar eksikse 400 döner.
 
 ## Auth — `/api/auth`
 
