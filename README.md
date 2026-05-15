@@ -5,6 +5,7 @@ Spring Boot tabanlı mikroservis backend, PostgreSQL + MongoDB veri katmanı, An
 
 ## İçindekiler
 - [Özellikler](#özellikler)
+- [Mobil Uygulama Görüntüleri](#mobil-uygulama-görüntüleri)
 - [Mimari](#mimari)
 - [Klasör Yapısı](#klasör-yapısı)
 - [Hızlı Başlangıç](#hızlı-başlangıç)
@@ -27,6 +28,16 @@ Bu proje, kullanıcıların kayıt ve giriş işlemlerini gerçekleştirerek not
 - **Mobil**: Android, Java. Custom Graphics içeren `NoteCardView` (Canvas + Paint ile çizilmiş kart) ve `ColorPaletteView` (özel çizim renk seçici).
 - **Docker**: `docker compose up --build` ile PostgreSQL + MongoDB + 4 servis tek komutta çalışır.
 - **Performans**: k6 ile smoke / load / stress senaryoları.
+
+## Mobil Uygulama Görüntüleri
+
+<details>
+    <summary>Görüntüleri göster / gizle</summary>
+    <p align="center">
+        <img src="img/img_1.jpeg" width="320" alt="Not ekranı" />
+        <img src="img/img_2.jpeg" width="320" alt="Notlarım listesi ekranı" />
+    </p>
+</details>
 
 ## Mimari
 
