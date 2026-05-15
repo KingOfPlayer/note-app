@@ -1,7 +1,7 @@
 package com.note_app.noteservice.repository;
 
 import com.note_app.commonutils.generic.GenericRepository;
-import com.note_app.noteservice.entity.Note;
+import com.note_app.noteservice.entities.Note;
 
 import java.util.List;
 
