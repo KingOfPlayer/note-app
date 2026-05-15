@@ -5,6 +5,7 @@ Spring Boot tabanlı mikroservis backend, PostgreSQL + MongoDB veri katmanı, An
 
 ## İçindekiler
 - [Özellikler](#özellikler)
+- [Mobil Uygulama Görüntüleri](#mobil-uygulama-görüntüleri)
 - [Mimari](#mimari)
 - [Klasör Yapısı](#klasör-yapısı)
 - [Hızlı Başlangıç](#hızlı-başlangıç)
@@ -13,17 +14,30 @@ Spring Boot tabanlı mikroservis backend, PostgreSQL + MongoDB veri katmanı, An
 - [Geliştirme Notları](#geliştirme-notları)
 - [Geliştiriciler](#geliştiriciler)
 
+## Proje hakkında
+Bu proje, kullanıcıların kayıt ve giriş işlemlerini gerçekleştirerek not oluşturabildiği, düzenleyebildiği, arayabildiği ve dosya ekleyebildiği bir Android mobil not tutma uygulamasıdır. Kullanıcılar sistem üzerinde güvenli bir şekilde hesap oluşturup oturum açar, notlarını kategorize ederek yönetir ve içeriklerine checkbox veya dosya referansları gibi zengin metin öğeleri ekler. Her kullanıcı yalnızca kendi oluşturduğu notlara ve yüklediği dosyalara erişir. Bu sayede diğer kullanıcıların verilere erişimi engellenir. Tüm sistem hızlıca kurulup çalıştırılmaya hazır bir altyapıya sahiptir.
+
 ## Özellikler
 
 - **Kayıt / Giriş**: BCrypt ile parola özetleme, JWT (jjwt 0.11.5) ile oturum. Gateway'deki `AuthMiddlewareFilter` token'ı çözer ve `X-User-Id`/`X-User-Role`/`X-User-Email` başlıklarını aşağı servislere geçirir. İstemcinin spoof etmesini engellemek için bu başlıklar gelen istekten önce silinir.
 - **Not yönetimi**: Oluştur, listele (sayfalı), arama (başlık / içerik / tüm alanlar), kategori filtresi, sabitleme, silme.
-- **Markup içerik**: Notun içeriği düz metin, checkbox (`[ ]` / `[x]`) ve dosya referansı (`![file:id]`) içerebilir. `NoteContentParser` bu yapıyı `NoteContentNode` kalıtım hiyerarşisine (TextNode / ChecklistNode / ImageNode) çeviriyor.
+- **Markup içerik**: Notun içeriği düz metin, checkbox (`[checkbox,0]` / `[checkbox,1]`) ve dosya referansı (`[image:id]`) içerebilir.
 - **Kategori yönetimi**: Kullanıcı bazlı kategori CRUD.
 - **Dosya yönetimi**: MongoDB GridFS üzerinden ek dosya yükleme / indirme.
-- **API Gateway**: Tek giriş noktası (8080). İstekleri ilgili servise yönlendirir, hata vakalarında uygun HTTP kodu döner.
+- **API Gateway**: Tek giriş noktası. İstekleri ilgili servise yönlendirir, hata vakalarında uygun HTTP kodu döner.
 - **Mobil**: Android, Java. Custom Graphics içeren `NoteCardView` (Canvas + Paint ile çizilmiş kart) ve `ColorPaletteView` (özel çizim renk seçici).
 - **Docker**: `docker compose up --build` ile PostgreSQL + MongoDB + 4 servis tek komutta çalışır.
 - **Performans**: k6 ile smoke / load / stress senaryoları.
+
+## Mobil Uygulama Görüntüleri
+
+<details>
+    <summary>Görüntüleri göster / gizle</summary>
+    <p align="center">
+        <img src="img/img_1.jpeg" width="320" alt="Not ekranı" />
+        <img src="img/img_2.jpeg" width="320" alt="Notlarım listesi ekranı" />
+    </p>
+</details>
 
 ## Mimari
 
@@ -151,12 +165,13 @@ docker compose up --build
 ```
 
 Ardından:
-- Gateway: http://localhost:8080
-- User Service: http://localhost:5001
-- Note Service: http://localhost:5002
-- File Service: http://localhost:5003
-- PostgreSQL: localhost:5432
-- MongoDB: localhost:27017
+- Gateway (host): http://localhost:8080
+- User Service (container network): http://user-service:5001
+- Note Service (container network): http://note-service:5002
+- File Service (container network): http://file-service:5003
+- PostgreSQL (container network): postgres:5432
+- MongoDB (container network): mongo:27017
+
 
 ### Yerel Geliştirme (Maven)
 ```bash
@@ -166,7 +181,7 @@ cd backend
 ```
 
 ### Android
-Android Studio ile `frontend/` klasörünü açın. `AppContext.BASE_URL` içine backend'in ulaşılabilir adresini yazın (gerçek telefonda PC'nin LAN IP'si, emülatörde `10.0.2.2`).
+Android Studio ile `frontend/` klasörünü açın. Gateway adresini `frontend/local.properties` içine `BASE_URL=...` olarak yazın (ör. emülatör için `http://10.0.2.2:8080`, gerçek telefonda PC'nin LAN IP'si). Bu değer build sırasında `BuildConfig.BASE_URL` olarak üretilir ve uygulama `AppContext.BASE_URL` üzerinden kullanır.
 
 ## API Uçları
 
@@ -176,21 +191,30 @@ Tam liste için bkz. [docs/API.md](docs/API.md).
 |---|---|---|
 | POST | `/api/auth/register` | Kayıt |
 | POST | `/api/auth/login` | Giriş |
+| GET | `/api/users` | Kullanıcıları listele (yalnızca `ADMIN`) |
 | GET | `/api/users/me` | Kendi profilim |
+| GET | `/api/users/{id}` | Kullanıcı detayı |
 | PUT | `/api/users/{id}` | Profil güncelle |
 | DELETE | `/api/users/{id}` | Hesap sil |
 | GET | `/api/notes` | Sayfalı liste |
 | POST | `/api/notes` | Not oluştur |
 | GET | `/api/notes/{id}` | Detay |
+| GET | `/api/notes/{id}/parsed` | İçeriği parse edilmiş node listesi |
 | PUT | `/api/notes/{id}` | Güncelle |
 | DELETE | `/api/notes/{id}` | Sil |
 | GET | `/api/notes/search?type=&q=` | Arama (title / content / all) |
 | GET | `/api/notes/pinned` | Sabitlenmiş notlar |
+| GET | `/api/notes/category/{categoryId}` | Kategoriye göre liste |
 | POST | `/api/notes/{id}/toggle-pin` | Sabitle/çöz |
 | GET | `/api/categories` | Kategorileri listele |
 | POST | `/api/categories` | Kategori oluştur |
+| PUT | `/api/categories/{id}` | Kategori güncelle |
+| DELETE | `/api/categories/{id}` | Kategori sil |
 | POST | `/api/files` | Dosya yükle (multipart) |
+| GET | `/api/files` | Dosya listele (opsiyonel `noteId`) |
+| GET | `/api/files/{id}` | Dosya metadata |
 | GET | `/api/files/{id}/download` | İndir |
+| DELETE | `/api/files/{id}` | Dosya sil |
 
 ## Performans Testleri
 
@@ -203,7 +227,7 @@ k6 run load-tests/stress.js
 
 Eşik değerler ve örnek sonuçlar [docs/PERFORMANCE.md](docs/PERFORMANCE.md) içindedir.
 
-## Notlar
+## Geliştirme Notları
 
 - Generic CRUD iskeleti `common-utils/generic` altında (`BaseEntity`, `GenericRepository`, `AbstractCrudService`, `PageResponse`, `ApiResponse`). Note ve Category bunun üstüne kuruluyor.
 - JDBC ve NoSQL farklı servislerin sorumluluğunda: note-service PostgreSQL + JdbcTemplate, user/file servisleri Mongo.

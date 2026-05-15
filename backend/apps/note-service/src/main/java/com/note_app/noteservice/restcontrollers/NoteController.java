@@ -2,12 +2,9 @@ package com.note_app.noteservice.restcontrollers;
 
 import com.note_app.commonutils.authguard.AuthGuard;
 import com.note_app.commonutils.authguard.UserRoles;
-import com.note_app.commonutils.exception.ErrorMessages;
 import com.note_app.commonutils.exception.ForbiddenException;
 import com.note_app.commonutils.generic.ApiResponse;
 import com.note_app.commonutils.generic.PageResponse;
-import com.note_app.noteservice.content.NoteContent;
-import com.note_app.noteservice.content.NoteContentParser;
 import com.note_app.noteservice.dto.NoteRequest;
 import com.note_app.noteservice.entities.Note;
 import com.note_app.noteservice.services.INoteService;
@@ -33,11 +30,9 @@ import java.util.List;
 public class NoteController {
 
     private final INoteService noteService;
-    private final NoteContentParser contentParser;
 
-    public NoteController(INoteService noteService, NoteContentParser contentParser) {
+    public NoteController(INoteService noteService) {
         this.noteService = noteService;
-        this.contentParser = contentParser;
     }
 
     @GetMapping
@@ -121,19 +116,6 @@ public class NoteController {
             @RequestHeader("X-User-Id") String userId,
             @PathVariable("categoryId") Long categoryId) {
         return ResponseEntity.ok(ApiResponse.ok(noteService.getUserNotesByCategory(userId, categoryId)));
-    }
-
-    @GetMapping("/{id}/parsed")
-    @AuthGuard(UserRoles.USER)
-    public ResponseEntity<ApiResponse<NoteContent>> getParsed(
-            @RequestHeader("X-User-Id") String userId,
-            @PathVariable("id") Long id) {
-        Note note = noteService.getById(id);
-        if (!note.getUserId().equals(userId)) {
-            throw new ForbiddenException(ErrorMessages.NOTE_FORBIDDEN_OTHER_USER);
-        }
-        NoteContent parsed = contentParser.parse(note.getContent());
-        return ResponseEntity.ok(ApiResponse.ok(parsed));
     }
 
     @PostMapping("/{id}/toggle-pin")

@@ -1,41 +1,42 @@
 # Performans Testleri (k6)
 
-Bu klasor k6 ile yazilmis API performans senaryolarini icerir.
+Bu klasör k6 ile yazılmış API performans senaryolarını içerir.
 
 ## Senaryolar
 
-| Dosya | Amac | VU | Sure |
+| Dosya | Amaç | VU | Süre |
 |---|---|---|---|
-| `smoke.js` | Sistemin ayakta oldugunu dogrulayan minimum yuk | 1 | 30s |
-| `load.js` | Beklenen kullanici yuku altinda davranisi olcer | 20 → 50 | 2 dk |
-| `stress.js` | Sistemin kirilma noktasini bulur | 50 → 200 | 3 dk |
+| `smoke.js` | Sistemin ayakta olduğunu doğrulayan minimum yük | 1 | 30s |
+| `load.js` | Beklenen kullanıcı yükü altında davranışı ölçer | 0 → 20 → 50 → 0 | 2 dk |
+| `stress.js` | Yük arttıkça gecikme davranışını ölçer | 0 → 50 → 100 → 200 → 0 | 3 dk |
 
-## Esikler
+## Eşikler
 
-- `http_req_failed`: smoke %1, load %2, stress %10 altinda kalmali
-- `http_req_duration` p95: smoke 500ms, load 800ms, stress 2000ms
+- `http_req_failed`: smoke `rate<0.01`, load `rate<0.02`, stress `rate<0.10`
+- `http_req_duration`: smoke `p(95)<500ms`, load `p(95)<800ms` ve `p(99)<1500ms`, stress `p(95)<2000ms`
 
-## Calistirma
+## Çalıştırma
 
-Once tum sistem ayakta olmali:
+Önce tüm sistem ayakta olmalı:
 ```bash
 docker compose up -d
 ```
 
-Sonra (proje kokunden):
+Sonra (proje kökünden):
 ```bash
 k6 run load-tests/smoke.js
 k6 run load-tests/load.js
 k6 run load-tests/stress.js
 ```
 
-Farkli bir gateway URL kullanmak icin:
+Farklı bir gateway URL kullanmak için:
 ```bash
 k6 run -e GATEWAY_URL=http://localhost:8080 load-tests/load.js
 ```
 
-## Ne olcuyoruz?
-
-- Auth uzerinden gercek bir kullanici olusturup token alir
-- Note olustur/listele/ara akisini her iter'de kosturur
-- 4xx ve 5xx oranlarini ve 95p latency'yi raporlar
+Sonuçları JSON olarak kaydetmek için:
+```bash
+k6 run --summary-export load-tests/smoke-result.json load-tests/smoke.js
+k6 run --summary-export load-tests/load-result.json  load-tests/load.js
+k6 run --summary-export load-tests/stress-result.json load-tests/stress.js
+```

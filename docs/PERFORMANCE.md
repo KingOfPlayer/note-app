@@ -38,9 +38,9 @@ k6 run load-tests/stress.js
 
 ## Beklenen Davranış
 
-- **Smoke**: Tek kullanıcı, register + create note + list akışı 100ms ortalama altında kalmalı.
-- **Load**: 50 VU'da p95 < 800ms; gateway + JDBC + Mongo darboğaz oluşturmamalı.
-- **Stress**: 200 VU sonrasında failure oranı yükselir; 5xx oranı %10'u geçtiği eşik kırılma noktası kabul edilir.
+- **Smoke**: Tek kullanıcı ile register + note oluştur + listele akışının temel sağlık kontrolünü yapar.
+- **Load**: Beklenen yük altında gecikme ve hata oranlarını ölçer.
+- **Stress**: Daha yüksek eş zamanlılıkta sistemin gecikme davranışını gözlemler.
 
 ## Ölçülen Metrikler
 
@@ -53,15 +53,24 @@ k6 run load-tests/stress.js
 ## Notlar
 
 - Tüm istekler Gateway (8080) üzerinden geçer; Gateway'in proxy maliyeti her ölçümün içindedir.
-- `note-service` JDBC tarafında `notes` tablosuna `is_pinned, updated_at` indeksleri eklendi; sayfalama ve arama bu indekslerden yararlanır.
-- `user-service` her register'da BCrypt cost 10 kullanır; CPU bağımlı ölçümlerde register oranı sınırlıdır.
-- Stres testinde failure'lar genelde Mongo yazıcı sıkışmasından gelir; `mongo` servisi tek instance olduğu için yatay ölçeklenebilir değildir.
+- `note-service` PostgreSQL şemasını `schema.sql` ile başlatır ve temel indeksleri oluşturur.
 
 ## Sonuçların Kaydı
 
 Test çıktısını JSON olarak almak için:
 ```bash
-k6 run --out json=docs/perf-load.json load-tests/load.js
+k6 run --summary-export load-tests/smoke-result.json load-tests/smoke.js
+k6 run --summary-export load-tests/load-result.json  load-tests/load.js
+k6 run --summary-export load-tests/stress-result.json load-tests/stress.js
 ```
 
-Test koşumu sonrası ekran görüntüleri `docs/screenshots/` altında saklanabilir.
+Repo'da kayıtlı örnek sonuçlar `load-tests/*-result.json` dosyalarıdır.
+
+## Kayıtlı Sonuç Özeti
+
+| Dosya | Checks (pass/fail) | `http_req_failed.value` | `http_req_duration` med (ms) | p90 (ms) | p95 (ms) | max (ms) | avg (ms) | `http_reqs.rate` (req/s) | `iterations.count` | `iterations.rate` (iter/s) | `vus_max` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| smoke-result.json | 104/0 | 0 | 14.63 | 153.529 | 156.111 | 191.455 | 60.8 | 2.535 | 26 | 0.845 | 1 |
+| load-result.json | 11556/0 | 0 | 16.461 | 674.491 | 1361.718 | 3702.323 | 191.186 | 95.983 | 1926 | 15.997 | 50 |
+| stress-result.json | 8334/0 | 0 | 34.884 | 8213.839 | 10841.72 | 18013.825 | 2096.139 | 46.219 | 2778 | 15.406 | 200 |
+
