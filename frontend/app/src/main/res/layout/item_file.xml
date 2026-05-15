@@ -29,11 +29,29 @@
             android:textColor="#9E9E9E" />
     </LinearLayout>
 
+
+    <ImageButton
+        android:id="@+id/btn_add_prewiew"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/outline_align_flex_center_24"
+        android:contentDescription="Dosyayı nota ekle" />
+
+    <ImageButton
+        android:id="@+id/btn_open"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/outline_arrow_forward_ios_24"
+        android:contentDescription="Dosyayı aç" />
+
+
     <ImageButton
         android:id="@+id/btn_delete_file"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
-        android:contentDescription="Dosyayi sil" />
+        android:src="@drawable/outline_close_24"
+        android:contentDescription="Dosyayı sil" />
 </LinearLayout>

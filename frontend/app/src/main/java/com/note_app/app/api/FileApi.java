@@ -72,4 +72,10 @@ public class FileApi {
         meta.setUploadedAt(json.optString("uploadedAt"));
         return meta;
     }
+
+    public byte[] download(String filename)
+        throws IOException, JSONException {
+        String filenamePath = downloadUrl(filename);
+        return client.get_raw(filenamePath);
+    }
 }

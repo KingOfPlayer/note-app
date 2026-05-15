@@ -1,16 +1,20 @@
 package com.note_app.app.ui;
 
+import static android.view.View.INVISIBLE;
+
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -49,6 +53,10 @@ public class NoteEditActivity extends AppCompatActivity {
     private String selectedColor = "#FFF59D";
     private ActivityResultLauncher<String> filePickerLauncher;
 
+    // Araçlar
+
+    private Button addCheckbox;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +75,12 @@ public class NoteEditActivity extends AppCompatActivity {
         pinnedCheck = findViewById(R.id.check_pinned);
         filesSection = findViewById(R.id.files_section);
         filesContainer = findViewById(R.id.files_container);
+
+        // Araçlar
+        addCheckbox = findViewById(R.id.addCheckbox);
+
+        contentField.addTextChangedListener(new NoteContentTextWatcher(contentField,getBaseContext(),app));
+        contentField.setMovementMethod(LinkMovementMethod.getInstance());
 
         paletteView.setOnColorSelectedListener(hex -> selectedColor = hex);
         paletteView.setSelectedColor(selectedColor);
@@ -94,6 +108,10 @@ public class NoteEditActivity extends AppCompatActivity {
             loadExisting();
             refreshFiles();
         }
+
+        addCheckbox.setOnClickListener(v -> {
+            insertCheckbox();
+        });
     }
 
     private void updateFilesSectionVisibility() {
@@ -163,10 +181,18 @@ public class NoteEditActivity extends AppCompatActivity {
             View row = inflater.inflate(R.layout.item_file, filesContainer, false);
             TextView name = row.findViewById(R.id.text_filename);
             TextView size = row.findViewById(R.id.text_size);
+            ImageButton add = row.findViewById(R.id.btn_add_prewiew);
+            ImageButton open = row.findViewById(R.id.btn_open);
             ImageButton del = row.findViewById(R.id.btn_delete_file);
             name.setText(f.getFilename());
             size.setText(humanSize(f.getSize()));
             del.setOnClickListener(v -> deleteFile(f));
+            if(!f.getContentType().startsWith("image/")){
+                add.setVisibility(INVISIBLE);
+            }
+            add.setOnClickListener(v -> {
+                insertImage(f.getId());
+            });
             filesContainer.addView(row);
         }
     }
@@ -332,5 +358,21 @@ public class NoteEditActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                     }
                 });
+    }
+
+    private void insertAtCursor(String tag) {
+        int cursor = contentField.getSelectionStart();
+        if (cursor < 0) cursor = 0;
+        contentField.getText().insert(cursor, tag);
+
+        contentField.setSelection(cursor + tag.length());
+    }
+
+    public void insertCheckbox() {
+        insertAtCursor("[checkbox,0]");
+    }
+
+    public void insertImage(String fileId) {
+        insertAtCursor("[image," + fileId + "]");
     }
 }
