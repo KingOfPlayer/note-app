@@ -1,20 +1,47 @@
 package com.note_app.app.ui;
 
+import static android.view.View.INVISIBLE;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
+import android.text.method.LinkMovementMethod;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.note_app.app.R;
+import com.note_app.app.model.FileMeta;
 import com.note_app.app.model.Note;
 import com.note_app.app.ui.widget.ColorPaletteView;
 import com.note_app.app.util.AppContext;
 import com.note_app.app.util.BackgroundExecutor;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 public class NoteEditActivity extends AppCompatActivity {
 
@@ -25,14 +52,25 @@ public class NoteEditActivity extends AppCompatActivity {
     private EditText contentField;
     private ColorPaletteView paletteView;
     private CheckBox pinnedCheck;
+    private View filesSection;
+    private LinearLayout filesContainer;
+
     private Long noteId;
-    private String selectedColor = "#FFF59D";
+    private String selectedColor;
+    private ActivityResultLauncher<String> filePickerLauncher;
+
+    // Araçlar
+
+    private Button addCheckbox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_edit);
         app = new AppContext(this);
+
+        // Initialize selectedColor from resources
+        selectedColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, R.color.color_note_default)));
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -44,25 +82,57 @@ public class NoteEditActivity extends AppCompatActivity {
         contentField = findViewById(R.id.field_content);
         paletteView = findViewById(R.id.palette);
         pinnedCheck = findViewById(R.id.check_pinned);
+        filesSection = findViewById(R.id.files_section);
+        filesContainer = findViewById(R.id.files_container);
+
+        // Araçlar
+        addCheckbox = findViewById(R.id.addCheckbox);
+
+        contentField.addTextChangedListener(new NoteContentTextWatcher(contentField,getBaseContext(),app));
+        contentField.setMovementMethod(LinkMovementMethod.getInstance());
 
         paletteView.setOnColorSelectedListener(hex -> selectedColor = hex);
         paletteView.setSelectedColor(selectedColor);
+
+        filePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                this::onFileSelected);
+
+        findViewById(R.id.btn_add_file).setOnClickListener(v -> {
+            if (noteId == null) {
+                Toast.makeText(this,
+                        "Once notu kaydedin sonra dosya ekleyebilirsiniz",
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+            filePickerLauncher.launch("*/*");
+        });
 
         if (getIntent().hasExtra(EXTRA_NOTE_ID)) {
             noteId = getIntent().getLongExtra(EXTRA_NOTE_ID, -1L);
             if (noteId <= 0) noteId = null;
         }
+        updateFilesSectionVisibility();
         if (noteId != null) {
             loadExisting();
+            refreshFiles();
         }
+
+        addCheckbox.setOnClickListener(v -> {
+            insertCheckbox();
+        });
+    }
+
+    private void updateFilesSectionVisibility() {
+        filesSection.setVisibility(noteId != null ? View.VISIBLE : View.GONE);
     }
 
     private void loadExisting() {
         BackgroundExecutor.run(
                 () -> app.notes().list(0, 200),
-                new BackgroundExecutor.Callback<java.util.List<Note>>() {
+                new BackgroundExecutor.Callback<List<Note>>() {
                     @Override
-                    public void onSuccess(java.util.List<Note> result) {
+                    public void onSuccess(List<Note> result) {
                         for (Note n : result) {
                             if (n.getId().equals(noteId)) {
                                 titleField.setText(n.getTitle());
@@ -84,6 +154,152 @@ public class NoteEditActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                     }
                 });
+    }
+
+    private void refreshFiles() {
+        if (noteId == null) return;
+        BackgroundExecutor.run(
+                () -> app.files().listForNote(noteId),
+                new BackgroundExecutor.Callback<List<FileMeta>>() {
+                    @Override
+                    public void onSuccess(List<FileMeta> result) {
+                        renderFiles(result);
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        Toast.makeText(NoteEditActivity.this,
+                                "Dosyalar yuklenemedi: " + error.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void renderFiles(List<FileMeta> files) {
+        filesContainer.removeAllViews();
+        if (files.isEmpty()) {
+            TextView empty = new TextView(this);
+            empty.setText("Henuz ek yok");
+            empty.setTextColor(ContextCompat.getColor(this, R.color.text_disabled));
+            empty.setPadding(0, 8, 0, 8);
+            filesContainer.addView(empty);
+            return;
+        }
+        LayoutInflater inflater = LayoutInflater.from(this);
+        for (FileMeta f : files) {
+            View row = inflater.inflate(R.layout.item_file, filesContainer, false);
+            TextView name = row.findViewById(R.id.text_filename);
+            TextView size = row.findViewById(R.id.text_size);
+            ImageButton add = row.findViewById(R.id.btn_add_prewiew);
+            ImageButton open = row.findViewById(R.id.btn_open);
+            ImageButton del = row.findViewById(R.id.btn_delete_file);
+            name.setText(f.getFilename());
+            size.setText(humanSize(f.getSize()));
+            del.setOnClickListener(v -> deleteFile(f));
+            if(!f.getContentType().startsWith("image/")){
+                add.setVisibility(INVISIBLE);
+            }
+            add.setOnClickListener(v -> {
+                insertImage(f.getId());
+            });
+            open.setOnClickListener(v-> {
+                BackgroundExecutor.run(() -> {
+                        byte[] data = app.files().download(f.getId());
+                        File file = saveFileToCache(getBaseContext(), data, f.getFilename());
+                        return getFileUri(getBaseContext(), file);
+
+                    },
+                    new BackgroundExecutor.Callback<>() {
+                        @Override
+                        public void onSuccess(Uri result) {
+                            openFile(getBaseContext(), result, f.getContentType());
+                        }
+
+                        @Override
+                        public void onError(Throwable error) {
+                            Toast.makeText(NoteEditActivity.this,
+                                "İndirilmedi: " + error.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                        }
+                    });
+            });
+            filesContainer.addView(row);
+        }
+    }
+
+    private String humanSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return (bytes / 1024) + " KB";
+        return (bytes / (1024 * 1024)) + " MB";
+    }
+
+    private void onFileSelected(Uri uri) {
+        if (uri == null || noteId == null) return;
+        String[] meta = queryFileMeta(uri);
+        String filename = meta[0];
+        String mimeType = meta[1];
+
+        BackgroundExecutor.run(
+                () -> {
+                    try (InputStream is = getContentResolver().openInputStream(uri)) {
+                        if (is == null) throw new IllegalStateException("Dosya okunamadi");
+                        byte[] bytes = is.readAllBytes();
+                        return app.files().upload(noteId, filename, bytes, mimeType);
+                    }
+                },
+                new BackgroundExecutor.Callback<FileMeta>() {
+                    @Override
+                    public void onSuccess(FileMeta result) {
+                        Toast.makeText(NoteEditActivity.this,
+                                "Dosya yuklendi", Toast.LENGTH_SHORT).show();
+                        refreshFiles();
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        Toast.makeText(NoteEditActivity.this,
+                                "Yuklenemedi: " + error.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private String[] queryFileMeta(Uri uri) {
+        String filename = "dosya";
+        String mime = getContentResolver().getType(uri);
+        try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (idx >= 0) filename = cursor.getString(idx);
+            }
+        }
+        return new String[]{filename, mime};
+    }
+
+    private void deleteFile(FileMeta file) {
+        new AlertDialog.Builder(this)
+                .setTitle("Dosyayi sil")
+                .setMessage(file.getFilename() + " silinsin mi?")
+                .setPositiveButton("Sil", (d, w) ->
+                        BackgroundExecutor.run(
+                                () -> { app.files().delete(file.getId()); return true; },
+                                new BackgroundExecutor.Callback<Boolean>() {
+                                    @Override
+                                    public void onSuccess(Boolean result) {
+                                        Toast.makeText(NoteEditActivity.this,
+                                                "Silindi", Toast.LENGTH_SHORT).show();
+                                        refreshFiles();
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable error) {
+                                        Toast.makeText(NoteEditActivity.this,
+                                                "Silinemedi: " + error.getMessage(),
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                }))
+                .setNegativeButton("Vazgec", null)
+                .show();
     }
 
     @Override
@@ -124,15 +340,24 @@ public class NoteEditActivity extends AppCompatActivity {
         n.setColor(selectedColor);
         n.setPinned(pinnedCheck.isChecked());
 
+        boolean isCreate = (noteId == null);
         BackgroundExecutor.run(
-                () -> noteId == null ? app.notes().create(n) : app.notes().update(noteId, n),
+                () -> isCreate ? app.notes().create(n) : app.notes().update(noteId, n),
                 new BackgroundExecutor.Callback<Note>() {
                     @Override
                     public void onSuccess(Note result) {
                         Toast.makeText(NoteEditActivity.this,
-                                noteId == null ? "Not olusturuldu" : "Not guncellendi",
+                                isCreate ? "Not olusturuldu, simdi dosya ekleyebilirsiniz"
+                                        : "Not guncellendi",
                                 Toast.LENGTH_SHORT).show();
-                        finish();
+                        if (isCreate) {
+                            noteId = result.getId();
+                            updateFilesSectionVisibility();
+                            invalidateOptionsMenu();
+                            refreshFiles();
+                        } else {
+                            finish();
+                        }
                     }
 
                     @Override
@@ -163,5 +388,45 @@ public class NoteEditActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                     }
                 });
+    }
+
+    private void insertAtCursor(String tag) {
+        int cursor = contentField.getSelectionStart();
+        if (cursor < 0) cursor = 0;
+        contentField.getText().insert(cursor, tag);
+
+        contentField.setSelection(cursor + tag.length());
+    }
+
+    public void insertCheckbox() {
+        insertAtCursor("[checkbox,0]");
+    }
+
+    public void insertImage(String fileId) {
+        insertAtCursor("[image," + fileId + "]");
+    }
+
+    public File saveFileToCache(Context context, byte[] data, String fileName) throws IOException {
+        File file = new File(context.getCacheDir(), fileName);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(data);
+        }
+        return file;
+    }
+
+    public Uri getFileUri(Context context, File file) {
+        // "com.your.package.fileprovider" must match your Manifest entry
+        return FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", file);
+    }
+
+    public void openFile(Context context, Uri uri, String mimeType) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(uri, mimeType);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Intent chooser = Intent.createChooser(intent, "Open file with...");
+        chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(chooser);
     }
 }

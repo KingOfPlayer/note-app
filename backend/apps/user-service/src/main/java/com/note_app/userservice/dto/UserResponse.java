@@ -1,6 +1,6 @@
 package com.note_app.userservice.dto;
 
-import com.note_app.userservice.Entities.Models.User;
+import com.note_app.userservice.entities.User;
 
 public class UserResponse {
 

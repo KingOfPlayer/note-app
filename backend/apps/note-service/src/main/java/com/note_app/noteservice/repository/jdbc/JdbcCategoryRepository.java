@@ -1,6 +1,6 @@
 package com.note_app.noteservice.repository.jdbc;
 
-import com.note_app.noteservice.entity.Category;
+import com.note_app.noteservice.entities.Category;
 import com.note_app.noteservice.repository.ICategoryRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;

@@ -1,7 +1,8 @@
 package com.note_app.noteservice.repository.jdbc;
 
-import com.note_app.noteservice.entity.Note;
 import org.springframework.jdbc.core.RowMapper;
+
+import com.note_app.noteservice.entities.Note;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

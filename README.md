@@ -17,6 +17,7 @@ Spring Boot tabanlı mikroservis backend, PostgreSQL + MongoDB veri katmanı, An
 
 - **Kayıt / Giriş**: BCrypt ile parola özetleme, JWT (jjwt 0.11.5) ile oturum. Gateway'deki `AuthMiddlewareFilter` token'ı çözer ve `X-User-Id`/`X-User-Role`/`X-User-Email` başlıklarını aşağı servislere geçirir. İstemcinin spoof etmesini engellemek için bu başlıklar gelen istekten önce silinir.
 - **Not yönetimi**: Oluştur, listele (sayfalı), arama (başlık / içerik / tüm alanlar), kategori filtresi, sabitleme, silme.
+- **Markup içerik**: Notun içeriği düz metin, checkbox (`[ ]` / `[x]`) ve dosya referansı (`![file:id]`) içerebilir. `NoteContentParser` bu yapıyı `NoteContentNode` kalıtım hiyerarşisine (TextNode / ChecklistNode / ImageNode) çeviriyor.
 - **Kategori yönetimi**: Kullanıcı bazlı kategori CRUD.
 - **Dosya yönetimi**: MongoDB GridFS üzerinden ek dosya yükleme / indirme.
 - **API Gateway**: Tek giriş noktası (8080). İstekleri ilgili servise yönlendirir, hata vakalarında uygun HTTP kodu döner.
@@ -164,8 +165,8 @@ cd backend
 ./mvnw -pl apps/note-service spring-boot:run
 ```
 
-### Android (Emulator)
-Android Studio ile `frontend/` klasörünü açın. Emülatörden host makineye `10.0.2.2` üzerinden ulaşılır; `AppContext.BASE_URL` zaten bunu kullanır.
+### Android
+Android Studio ile `frontend/` klasörünü açın. `AppContext.BASE_URL` içine backend'in ulaşılabilir adresini yazın (gerçek telefonda PC'nin LAN IP'si, emülatörde `10.0.2.2`).
 
 ## API Uçları
 
@@ -202,18 +203,14 @@ k6 run load-tests/stress.js
 
 Eşik değerler ve örnek sonuçlar [docs/PERFORMANCE.md](docs/PERFORMANCE.md) içindedir.
 
-## Geliştirme Notları
+## Notlar
 
-- **Generic<T>**: `common-utils` altındaki `BaseEntity<ID>`, `GenericRepository<T,ID>`, `GenericService<T,ID>`, `AbstractCrudService<T,ID>`, `PageResponse<T>` ve `ApiResponse<T>` tüm domain sınıflarında ortak tip güvenli bir CRUD iskeleti sağlar.
-- **JDBC + NoSQL izole**: `note-service` PostgreSQL + JdbcTemplate kullanır; `user-service` ve `file-service` MongoDB ile çalışır. İkisi farklı modüller olarak ayrılmıştır.
-- **SOLID**: Her servis interface'lerle bağımlılık inversiyonu kullanır (`INoteService`, `INoteRepository`, `IUserService`...). Service'ler constructor injection ile bağımlılık alır.
-- **Design Patterns**:
-  - *Strategy*: `SearchStrategy` (`TitleSearchStrategy`, `ContentSearchStrategy`, `AllFieldsSearchStrategy`) — arama davranışını çalışma zamanında seçer.
-  - *Factory*: `SearchStrategyFactory` — istemcinin verdiği `type` parametresine göre uygun stratejiyi döndürür.
-  - *Template Method*: `AbstractCrudService` — `beforeCreate` / `beforeUpdate` hook'larıyla alt sınıflar davranışı özelleştirir.
-  - *Repository Pattern*: Veri erişimi ayrı bir katmanda izole edilmiştir.
-- **Hata yönetimi**: `common-utils/exception/GlobalExceptionHandler` her istisnayı uygun HTTP koduna eşler (`400`, `401`, `403`, `404`, `503`, `504`). Validation hataları `@RestControllerAdvice` ile yakalanır.
-- **Custom Graphics**: `NoteCardView` ve `ColorPaletteView` `View`'dan türeyip `onDraw` içinde `Canvas` + `Paint` API'si ile elle çizilir. Standart bileşen kullanılmamıştır.
+- Generic CRUD iskeleti `common-utils/generic` altında (`BaseEntity`, `GenericRepository`, `AbstractCrudService`, `PageResponse`, `ApiResponse`). Note ve Category bunun üstüne kuruluyor.
+- JDBC ve NoSQL farklı servislerin sorumluluğunda: note-service PostgreSQL + JdbcTemplate, user/file servisleri Mongo.
+- Servis-arayüz ayrımı var (`INoteService`/`NoteService` gibi), constructor injection ile bağımlılık veriliyor.
+- Arama için Strategy + Factory deseni, ortak CRUD için Template Method deseni, yetki için AOP aspect kullanıldı.
+- Hatalar `common-utils/exception/GlobalExceptionHandler` üzerinden tek noktadan HTTP koduna eşleniyor.
+- `NoteCardView` ve `ColorPaletteView` Android View'dan türeyip onDraw içinde Canvas ile çiziliyor; standart bileşen kullanılmadı.
 
 ## Geliştiriciler
 

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -34,6 +35,12 @@ public class ApiClient {
         return execute(b.build());
     }
 
+    public byte[] get_raw(String path) throws IOException {
+        Request.Builder b = new Request.Builder().url(baseUrl + path).get();
+        applyAuth(b);
+        return execute_raw(b.build());
+    }
+
     public String post(String path, String json, boolean withAuth) throws IOException {
         RequestBody body = RequestBody.create(json, JSON);
         Request.Builder b = new Request.Builder().url(baseUrl + path).post(body);
@@ -54,6 +61,12 @@ public class ApiClient {
         return execute(b.build());
     }
 
+    public String postMultipart(String path, MultipartBody body) throws IOException {
+        Request.Builder b = new Request.Builder().url(baseUrl + path).post(body);
+        applyAuth(b);
+        return execute(b.build());
+    }
+
     private void applyAuth(Request.Builder b) {
         String token = session.getToken();
         if (token != null && !token.isBlank()) {
@@ -68,6 +81,17 @@ public class ApiClient {
                 throw new ApiException(response.code(), bodyString);
             }
             return bodyString;
+        }
+    }
+
+    private byte[] execute_raw(Request request) throws IOException {
+        try (Response response = client.newCall(request).execute()) {
+            okhttp3.ResponseBody data = response.body();
+
+            if (!response.isSuccessful()) {
+                throw new ApiException(response.code(), data != null ? data.toString() : "");
+            }
+            return data != null ? data.bytes() : new byte[0];
         }
     }
 }
