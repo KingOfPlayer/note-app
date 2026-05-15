@@ -37,6 +37,7 @@ import com.note_app.app.ui.widget.ColorPaletteView;
 import com.note_app.app.util.AppContext;
 import com.note_app.app.util.BackgroundExecutor;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -243,7 +244,7 @@ public class NoteEditActivity extends AppCompatActivity {
                 () -> {
                     try (InputStream is = getContentResolver().openInputStream(uri)) {
                         if (is == null) throw new IllegalStateException("Dosya okunamadi");
-                        byte[] bytes = is.readAllBytes();
+                        byte[] bytes = readAllBytes(is);
                         return app.files().upload(noteId, filename, bytes, mimeType);
                     }
                 },
@@ -428,5 +429,15 @@ public class NoteEditActivity extends AppCompatActivity {
         Intent chooser = Intent.createChooser(intent, "Open file with...");
         chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(chooser);
+    }
+
+    private byte[] readAllBytes(InputStream is) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] chunk = new byte[8192];
+        int bytesRead;
+        while ((bytesRead = is.read(chunk)) != -1) {
+            buffer.write(chunk, 0, bytesRead);
+        }
+        return buffer.toByteArray();
     }
 }
