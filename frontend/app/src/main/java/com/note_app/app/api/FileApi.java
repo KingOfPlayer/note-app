@@ -73,9 +73,9 @@ public class FileApi {
         return meta;
     }
 
-    public byte[] download(String filename)
+    public byte[] download(String fileId)
         throws IOException, JSONException {
-        String filenamePath = downloadUrl(filename);
+        String filenamePath = downloadUrl(fileId);
         return client.get_raw(filenamePath);
     }
 }

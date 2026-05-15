@@ -3,6 +3,7 @@ package com.note_app.app.ui;
 import static android.view.View.INVISIBLE;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -26,6 +27,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 
 import com.note_app.app.R;
 import com.note_app.app.model.FileMeta;
@@ -34,6 +36,9 @@ import com.note_app.app.ui.widget.ColorPaletteView;
 import com.note_app.app.util.AppContext;
 import com.note_app.app.util.BackgroundExecutor;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -192,6 +197,27 @@ public class NoteEditActivity extends AppCompatActivity {
             }
             add.setOnClickListener(v -> {
                 insertImage(f.getId());
+            });
+            open.setOnClickListener(v-> {
+                BackgroundExecutor.run(() -> {
+                        byte[] data = app.files().download(f.getId());
+                        File file = saveFileToCache(getBaseContext(), data, f.getFilename());
+                        return getFileUri(getBaseContext(), file);
+
+                    },
+                    new BackgroundExecutor.Callback<>() {
+                        @Override
+                        public void onSuccess(Uri result) {
+                            openFile(getBaseContext(), result, f.getContentType());
+                        }
+
+                        @Override
+                        public void onError(Throwable error) {
+                            Toast.makeText(NoteEditActivity.this,
+                                "İndirilmedi: " + error.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                        }
+                    });
             });
             filesContainer.addView(row);
         }
@@ -374,5 +400,29 @@ public class NoteEditActivity extends AppCompatActivity {
 
     public void insertImage(String fileId) {
         insertAtCursor("[image," + fileId + "]");
+    }
+
+    public File saveFileToCache(Context context, byte[] data, String fileName) throws IOException {
+        File file = new File(context.getCacheDir(), fileName);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(data);
+        }
+        return file;
+    }
+
+    public Uri getFileUri(Context context, File file) {
+        // "com.your.package.fileprovider" must match your Manifest entry
+        return FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", file);
+    }
+
+    public void openFile(Context context, Uri uri, String mimeType) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(uri, mimeType);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Intent chooser = Intent.createChooser(intent, "Open file with...");
+        chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(chooser);
     }
 }
