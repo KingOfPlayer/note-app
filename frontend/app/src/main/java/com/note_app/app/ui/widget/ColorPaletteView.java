@@ -8,6 +8,10 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.core.content.ContextCompat;
+
+import com.note_app.app.R;
+
 public class ColorPaletteView extends View {
 
     public interface OnColorSelectedListener {
@@ -36,8 +40,8 @@ public class ColorPaletteView extends View {
         this.density = getResources().getDisplayMetrics().density;
         ringPaint.setStyle(Paint.Style.STROKE);
         ringPaint.setStrokeWidth(3 * density);
-        ringPaint.setColor(Color.parseColor("#1A1A1A"));
-        shadowPaint.setColor(Color.parseColor("#22000000"));
+        ringPaint.setColor(ContextCompat.getColor(context, R.color.color_ring));
+        shadowPaint.setColor(ContextCompat.getColor(context, R.color.color_shadow));
     }
 
     public void setOnColorSelectedListener(OnColorSelectedListener l) {

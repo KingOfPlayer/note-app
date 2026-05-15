@@ -9,6 +9,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.note_app.app.R;
@@ -48,7 +49,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Holder
     public void onBindViewHolder(@NonNull Holder holder, int position) {
         Category c = items.get(position);
         holder.name.setText(c.getName());
-        int fill = parseColor(c.getColor(), Color.parseColor("#90CAF9"));
+        int defaultColor = ContextCompat.getColor(holder.itemView.getContext(), R.color.color_category_default);
+        int fill = parseColor(c.getColor(), defaultColor);
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.OVAL);
         shape.setColor(fill);

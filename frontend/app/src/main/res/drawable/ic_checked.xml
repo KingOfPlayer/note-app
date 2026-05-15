@@ -2,7 +2,7 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <!-- The fill color -->
-    <solid android:color="#6200EE" />
+    <solid android:color="@color/color_checkbox_checked" />
     <!-- Rounded corners -->
     <corners android:radius="4dp" />
     <!-- Size of the box -->

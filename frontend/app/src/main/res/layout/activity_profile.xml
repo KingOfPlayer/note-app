@@ -59,14 +59,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:textSize="14sp"
-                android:textColor="#757575" />
+                android:textColor="@color/text_tertiary" />
 
             <TextView
                 android:id="@+id/text_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#9E9E9E" />
+                android:textColor="@color/text_disabled" />
 
             <Button
                 android:id="@+id/btn_save"
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Hesabi Sil"
-                android:textColor="#D32F2F" />
+                android:textColor="@color/color_error" />
         </LinearLayout>
     </ScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

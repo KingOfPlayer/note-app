@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Base Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Text Colors - Light Mode -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#424242</color>
+    <color name="text_tertiary">#757575</color>
+    <color name="text_disabled">#9E9E9E</color>
+
+    <!-- Semantic Colors -->
+    <color name="color_error">#D32F2F</color>
+    <color name="color_pin">#D32F2F</color>
+    <color name="color_checkbox_checked">#6200EE</color>
+
+    <!-- Component Colors -->
+    <color name="color_divider">#E0E0E0</color>
+    <color name="color_ring">#1A1A1A</color>
+    <color name="color_shadow">#22000000</color>
+
+    <!-- Default Colors -->
+    <color name="color_note_default">#FFF59D</color>
+    <color name="color_category_default">#90CAF9</color>
+
+    <!-- Palette Colors (Note card background options) -->
+    <color name="palette_yellow">#FFF59D</color>
+    <color name="palette_orange">#FFCC80</color>
+    <color name="palette_red">#EF9A9A</color>
+    <color name="palette_purple">#CE93D8</color>
+    <color name="palette_blue">#90CAF9</color>
+    <color name="palette_green">#A5D6A7</color>
+    <color name="palette_brown">#BCAAA4</color>
+    <color name="palette_gray">#E0E0E0</color>
 </resources>

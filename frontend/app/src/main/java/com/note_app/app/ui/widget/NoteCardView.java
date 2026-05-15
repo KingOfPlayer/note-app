@@ -12,6 +12,9 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
+import androidx.core.content.ContextCompat;
+
+import com.note_app.app.R;
 import com.note_app.app.model.Note;
 
 import com.note_app.app.ui.spans.CheckboxSpanApplier;
@@ -19,8 +22,12 @@ import com.note_app.app.ui.spans.ImageSpanApplier;
 
 public class NoteCardView extends View {
 
-    private static final int DEFAULT_COLOR = Color.parseColor("#FFF59D");
-    private static final int SHADOW_COLOR = Color.parseColor("#22000000");
+    private int DEFAULT_COLOR;
+    private int SHADOW_COLOR;
+    private int PIN_COLOR;
+    private int TITLE_COLOR;
+    private int BODY_COLOR;
+    private int DATE_COLOR;
 
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint cardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -46,36 +53,62 @@ public class NoteCardView extends View {
     }
 
     private void initPaints() {
+        Context context = getContext();
+        DEFAULT_COLOR = ContextCompat.getColor(context, R.color.color_note_default);
+        SHADOW_COLOR = ContextCompat.getColor(context, R.color.color_shadow);
+        PIN_COLOR = ContextCompat.getColor(context, R.color.color_pin);
+        TITLE_COLOR = ContextCompat.getColor(context, R.color.text_primary);
+        BODY_COLOR = ContextCompat.getColor(context, R.color.text_secondary);
+        DATE_COLOR = ContextCompat.getColor(context, R.color.text_tertiary);
+
         shadowPaint.setColor(SHADOW_COLOR);
         shadowPaint.setStyle(Paint.Style.FILL);
 
         cardPaint.setStyle(Paint.Style.FILL);
 
         pinPaint.setStyle(Paint.Style.FILL);
-        pinPaint.setColor(Color.parseColor("#D32F2F"));
+        pinPaint.setColor(PIN_COLOR);
 
-        titlePaint.setColor(Color.parseColor("#212121"));
+        titlePaint.setColor(TITLE_COLOR);
         titlePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         titlePaint.setTextSize(18 * density);
 
-        bodyPaint.setColor(Color.parseColor("#424242"));
+        bodyPaint.setColor(BODY_COLOR);
         bodyPaint.setTextSize(14 * density);
 
-        datePaint.setColor(Color.parseColor("#757575"));
+        datePaint.setColor(DATE_COLOR);
         datePaint.setTextSize(11 * density);
     }
 
     public void setNote(Note note) {
         this.note = note;
+        int bgColor = DEFAULT_COLOR;
+        
         if (note != null && note.getColor() != null) {
             try {
-                cardPaint.setColor(Color.parseColor(note.getColor()));
+                bgColor = Color.parseColor(note.getColor());
+                cardPaint.setColor(bgColor);
             } catch (IllegalArgumentException ex) {
+                bgColor = DEFAULT_COLOR;
                 cardPaint.setColor(DEFAULT_COLOR);
             }
         } else {
             cardPaint.setColor(DEFAULT_COLOR);
         }
+        
+        // Adaptive text color based on background brightness
+        if (isLightColor(bgColor)) {
+            // Dark text on light background (always use dark colors)
+            titlePaint.setColor(0xFF212121);
+            bodyPaint.setColor(0xFF424242);
+            datePaint.setColor(0xFF757575);
+        } else {
+            // Light text on dark background (always use light colors)
+            titlePaint.setColor(0xFFFFFFFF);
+            bodyPaint.setColor(0xFFEEEEEE);
+            datePaint.setColor(0xFFBBBBBB);
+        }
+        
         if (note != null && note.getContent() != null) {
             String normalized = ContentSummary(note.getContent());
             contentSummary = normalized.substring(0, Math.min(normalized.length(), 160)).replace('\n', ' ');
@@ -83,6 +116,16 @@ public class NoteCardView extends View {
             contentSummary = "";
         }
         invalidate();
+    }
+
+    private boolean isLightColor(int color) {
+        int r = Color.red(color);
+        int g = Color.green(color);
+        int b = Color.blue(color);
+
+        // Calculate perceived luminance (using standard formula)
+        double luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+        return luminance > 0.5;
     }
 
     @Override

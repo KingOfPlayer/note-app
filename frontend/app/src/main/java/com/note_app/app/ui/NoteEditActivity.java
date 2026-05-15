@@ -27,6 +27,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import com.note_app.app.R;
@@ -55,7 +56,7 @@ public class NoteEditActivity extends AppCompatActivity {
     private LinearLayout filesContainer;
 
     private Long noteId;
-    private String selectedColor = "#FFF59D";
+    private String selectedColor;
     private ActivityResultLauncher<String> filePickerLauncher;
 
     // Araçlar
@@ -67,6 +68,9 @@ public class NoteEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_edit);
         app = new AppContext(this);
+
+        // Initialize selectedColor from resources
+        selectedColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, R.color.color_note_default)));
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -176,7 +180,7 @@ public class NoteEditActivity extends AppCompatActivity {
         if (files.isEmpty()) {
             TextView empty = new TextView(this);
             empty.setText("Henuz ek yok");
-            empty.setTextColor(0xFF9E9E9E);
+            empty.setTextColor(ContextCompat.getColor(this, R.color.text_disabled));
             empty.setPadding(0, 8, 0, 8);
             filesContainer.addView(empty);
             return;

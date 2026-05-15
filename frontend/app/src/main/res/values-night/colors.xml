@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Text Colors - Dark Mode -->
+    <color name="text_primary">#E0E0E0</color>
+    <color name="text_secondary">#BDBDBD</color>
+    <color name="text_tertiary">#9E9E9E</color>
+    <color name="text_disabled">#616161</color>
+
+    <!-- Semantic Colors - Dark Mode -->
+    <color name="color_error">#EF5350</color>
+    <color name="color_pin">#EF5350</color>
+    <color name="color_checkbox_checked">#BB86FC</color>
+
+    <!-- Component Colors - Dark Mode -->
+    <color name="color_divider">#424242</color>
+    <color name="color_ring">#FFFFFF</color>
+    <color name="color_shadow">#22FFFFFF</color>
+
+    <!-- Default Colors - Dark Mode -->
+    <color name="color_note_default">#FFF9C4</color>
+    <color name="color_category_default">#81D4FA</color>
+
+    <!-- Palette Colors - Dark Mode (adjusted for dark background) -->
+    <color name="palette_yellow">#FFF9C4</color>
+    <color name="palette_orange">#FFE0B2</color>
+    <color name="palette_red">#FFCCCC</color>
+    <color name="palette_purple">#E1BEE7</color>
+    <color name="palette_blue">#81D4FA</color>
+    <color name="palette_green">#C8E6C9</color>
+    <color name="palette_brown">#D7CCC8</color>
+    <color name="palette_gray">#757575</color>
+</resources>
