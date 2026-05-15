@@ -31,8 +31,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class ImageSpanApplier {
+
+    static final Pattern pattern = Pattern.compile("\\[image,([a-fA-F0-9]+)\\]");
     public static void apply(Context context, EditText editText, Editable s, AppContext app, Set<String> imageTracker) {
-        Pattern pattern = Pattern.compile("\\[image,([a-fA-F0-9]+)\\]");
         Matcher matcher = pattern.matcher(s.toString());
 
         Set<String> currentIds = new HashSet<>();
@@ -141,5 +142,24 @@ public class ImageSpanApplier {
     public static void clear(Editable s) {
         for (PlaceholderImageSpan span : s.getSpans(0, s.length(), PlaceholderImageSpan.class))
             s.removeSpan(span);
+    }
+
+    public static String convertNormalString(String input) {
+        if (input == null) return null;
+
+        Matcher matcher = pattern.matcher(input);
+        StringBuffer sb = new StringBuffer();
+
+        while (matcher.find()) {
+            String state = matcher.group(1);
+
+            String replacement = "🖼️";
+
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+        }
+
+        matcher.appendTail(sb);
+
+        return sb.toString();
     }
 }

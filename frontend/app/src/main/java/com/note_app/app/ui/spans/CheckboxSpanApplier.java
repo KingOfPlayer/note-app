@@ -16,8 +16,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CheckboxSpanApplier {
+
+    static final Pattern pattern = Pattern.compile("\\[checkbox,([01])\\]");
     public static void apply(Context context, EditText editText, Editable s) {
-        Pattern pattern = Pattern.compile("\\[checkbox,([01])\\]");
+
         Matcher matcher = pattern.matcher(s.toString());
 
         Paint.FontMetricsInt metrics = editText.getPaint().getFontMetricsInt();
@@ -47,5 +49,24 @@ public class CheckboxSpanApplier {
             s.removeSpan(span);
         for (CheckboxClickableSpan span : s.getSpans(0, s.length(), CheckboxClickableSpan.class))
             s.removeSpan(span);
+    }
+
+    public static String convertNormalString(String input) {
+        if (input == null) return null;
+
+        Matcher matcher = pattern.matcher(input);
+        StringBuffer sb = new StringBuffer();
+
+        while (matcher.find()) {
+            String state = matcher.group(1);
+
+            String replacement = "1".equals(state) ? "[x]" : "[ ]";
+
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+        }
+
+        matcher.appendTail(sb);
+
+        return sb.toString();
     }
 }

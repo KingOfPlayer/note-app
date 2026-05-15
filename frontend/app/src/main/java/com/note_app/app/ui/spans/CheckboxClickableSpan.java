@@ -22,7 +22,7 @@ public class CheckboxClickableSpan extends ClickableSpan {
 
         // Read the LIVE state from the actual text, not the captured variable
         String liveText  = spannable.subSequence(currentStart, currentEnd).toString();
-        Matcher m        = Pattern.compile("\\[checkbox,([01])\\]").matcher(liveText);
+        Matcher m        = CheckboxSpanApplier.pattern.matcher(liveText);
 
         if (m.find()) {
             String liveState = m.group(1);

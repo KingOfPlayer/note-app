@@ -13,7 +13,9 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.note_app.app.model.Note;
-import com.note_app.app.model.NoteContent;
+
+import com.note_app.app.ui.spans.CheckboxSpanApplier;
+import com.note_app.app.ui.spans.ImageSpanApplier;
 
 public class NoteCardView extends View {
 
@@ -75,8 +77,8 @@ public class NoteCardView extends View {
             cardPaint.setColor(DEFAULT_COLOR);
         }
         if (note != null && note.getContent() != null) {
-            NoteContent parsed = NoteContent.parse(note.getContent());
-            contentSummary = parsed.summary(160).replace('\n', ' ');
+            String normalized = ContentSummary(note.getContent());
+            contentSummary = normalized.substring(0, Math.min(normalized.length(), 160)).replace('\n', ' ');
         } else {
             contentSummary = "";
         }
@@ -167,5 +169,12 @@ public class NoteCardView extends View {
     private String formatDate(String iso) {
         if (iso == null || iso.length() < 10) return "";
         return iso.substring(0, 10);
+    }
+
+    private String ContentSummary(String content){
+        content = CheckboxSpanApplier.convertNormalString(content);
+        content = ImageSpanApplier.convertNormalString(content);
+
+        return content;
     }
 }
